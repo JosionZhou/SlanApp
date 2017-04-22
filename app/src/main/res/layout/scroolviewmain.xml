@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/svMain"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical"
+    android:fillViewport="true"
+    android:fadingEdge="vertical">
+
+    <org.apmem.tools.layouts.FlowLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/activity_check_goods_remarks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:background="@drawable/checkgoods_remarkszone">
+    </org.apmem.tools.layouts.FlowLayout>
+</ScrollView>

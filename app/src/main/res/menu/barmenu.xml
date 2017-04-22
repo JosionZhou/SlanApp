@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/add"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:title="新增"/>
+    <item
+        android:id="@+id/groupmember"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="组成员"/>
+
+    <item
+        android:id="@+id/stationbinding"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="打板岗位绑定"/>
+
+</menu>

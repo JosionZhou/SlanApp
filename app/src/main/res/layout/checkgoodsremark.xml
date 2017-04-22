@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EditText
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/etRemark"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="10dp"
+    android:background="@drawable/checkgoods_remarkszone"
+    android:layout_marginTop="3sp"
+    android:textSize="18sp"
+    android:gravity="top"
+    android:hint="@string/hint_checkgoods_remark"
+    />

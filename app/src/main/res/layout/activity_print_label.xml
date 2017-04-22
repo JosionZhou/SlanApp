@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/silver"
+    android:padding="3dp"
+    android:orientation="vertical"
+    tools:context="com.sl56.lis.androidapp.PrintLabelActivity">
+<EditText
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:inputType="textPersonName"
+    android:id="@+id/etreferencenumber"
+    android:hint="请输入单号"
+    android:singleLine="true"
+    android:background="@drawable/checkgoods_referencenumber"/>
+    <Button
+        android:id="@+id/btn_printlabels"
+        android:text="@string/text_slan_action_printlabel"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/button_shape"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="5"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_marginTop="5dp"
+        android:visibility="gone"/><!--暂时隐藏按钮，看实际要求是否需要启用-->
+    <ListView
+        android:id="@+id/list"
+        android:layout_marginTop="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/checkgoods_referencenumber"></ListView>
+</LinearLayout>
