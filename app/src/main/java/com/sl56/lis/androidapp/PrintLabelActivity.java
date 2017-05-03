@@ -25,7 +25,9 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class PrintLabelActivity extends AppCompatActivity {
 
@@ -110,35 +112,34 @@ public class PrintLabelActivity extends AppCompatActivity {
     }
 
     private void setListInfos() throws JSONException {
-         ArrayList<String> list =getCommonInfos();
+         ArrayList<Map.Entry<String,Boolean>> list =getCommonInfos();
         if(result.getString("ModeOfTransportName").toUpperCase().contains("DHL")){
-            list.add("转单号："+result.getString("TrackNumber"));
-            list.add("Label："+(result.getBoolean("IsPrint")?"已打印":"未打印"));
+            list.add(new AbstractMap.SimpleEntry("转单号："+result.getString("TrackNumber"),false));
+            list.add(new AbstractMap.SimpleEntry("Label："+(result.getBoolean("IsPrint")?"已打印":"未打印"),false));
         }else if(result.getString("ModeOfTransportName").toUpperCase().contains("FEDEX") || result.getString("ModeOfTransportName").toUpperCase().contains("UPS")){
-            list.add("需要电池信："+(result.getBoolean("IsBatteryLetter")?"是":"否"));
-            list.add("账号："+result.getString("AccountNumber"));
-            list.add("PI966："+(result.getBoolean("IsPI966")?"是":"否"));
-            list.add("PI967："+(result.getBoolean("IsPI967")?"是":"否"));
-            list.add("PI969："+(result.getBoolean("IsPI969")?"是":"否"));
-            list.add("PI970："+(result.getBoolean("IsPI970")?"是":"否"));
-            list.add("干电池："+(result.getBoolean("IsDryBattery")?"是":"否"));
+            list.add(new AbstractMap.SimpleEntry("需要电池信："+(result.getBoolean("IsBatteryLetter")?"是":"否"),result.getBoolean("IsBatteryLetter")));
+            list.add(new AbstractMap.SimpleEntry("账号："+result.getString("AccountNumber"),false));
+            list.add(new AbstractMap.SimpleEntry("PI966："+(result.getBoolean("IsPI966")?"是":"否"),result.getBoolean("IsPI966")));
+            list.add(new AbstractMap.SimpleEntry("PI967："+(result.getBoolean("IsPI967")?"是":"否"),result.getBoolean("IsPI967")));
+            list.add(new AbstractMap.SimpleEntry("PI969："+(result.getBoolean("IsPI969")?"是":"否"),result.getBoolean("IsPI969")));
+            list.add(new AbstractMap.SimpleEntry("PI970："+(result.getBoolean("IsPI970")?"是":"否"),result.getBoolean("IsPI970")));
+            list.add(new AbstractMap.SimpleEntry("干电池："+(result.getBoolean("DryBattery")?"是":"否"),result.getBoolean("DryBattery")));
         }
-        String[] data = list.toArray(new String[]{});
-        ArrayAdapter ad = new ArrayAdapter(this,R.layout.listviewitems,data);
+        ExtendAdapter ad = new ExtendAdapter(this,list);
         ListView lv = (ListView)findViewById(R.id.list);
         lv.setAdapter(ad);
     }
     private ArrayList getCommonInfos() throws JSONException {
-        ArrayList<String> list = new ArrayList<>();
-        list.add("渠道："+result.getString("ModeOfTransportName"));
-        list.add("国家："+result.getString("CountryName"));
-        list.add("件数："+result.getInt("Piece"));
-        list.add("入重："+result.getDouble("Weight"));
-        list.add("需要转口证："+(result.getBoolean("IsReExport")?"是":"否"));
-        list.add("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"));
-        list.add("需要发票(打印)："+(result.getBoolean("IsInvoice")?"是":"否"));
-        list.add("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"));
-        list.add("随货资料："+(result.getBoolean("IsFollowDocument")?"是":"否"));
+        ArrayList<Map.Entry<String,Boolean>> list = new ArrayList<>();
+        list.add(new AbstractMap.SimpleEntry("渠道："+result.getString("ModeOfTransportName"),false));
+        list.add(new AbstractMap.SimpleEntry("国家："+result.getString("CountryName"),false));
+        list.add(new AbstractMap.SimpleEntry("件数："+result.getInt("Piece"),false));
+        list.add(new AbstractMap.SimpleEntry("入重："+result.getDouble("Weight"),false));
+        list.add(new AbstractMap.SimpleEntry("需要转口证："+(result.getBoolean("IsReExport")?"是":"否"),result.getBoolean("IsReExport")));
+        list.add(new AbstractMap.SimpleEntry("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"),result.getBoolean("IsCustomsDeclaration")));
+        list.add(new AbstractMap.SimpleEntry("需要发票(打印)："+(result.getBoolean("IsInvoice")?"是":"否"),result.getBoolean("IsInvoice")));
+        list.add(new AbstractMap.SimpleEntry("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"),result.getBoolean("IsRequeiredInvoice")));
+        list.add(new AbstractMap.SimpleEntry("随货资料："+(result.getBoolean("IsFollowDocument")?"是":"否"),result.getBoolean("IsFollowDocument")));
         return list;
     }
     private void checkIsPrinted() throws JSONException {

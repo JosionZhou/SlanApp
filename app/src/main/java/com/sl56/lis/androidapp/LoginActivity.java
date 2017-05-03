@@ -82,15 +82,29 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 try {
                     subscriber.onNext(HttpHelper.getVersion());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    subscriber.onError(e);
                 }
             }
         })
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Action1<JSONObject>() {
+        .subscribe(new Subscriber<JSONObject>() {
             @Override
-            public void call(JSONObject jsonObject) {
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                pDialog.dismiss();
+                new MaterialDialog.Builder(LoginActivity.this)
+                        .content(e.getMessage())
+                        .positiveText("确定")
+                        .show();
+            }
+
+            @Override
+            public void onNext(JSONObject jsonObject) {
                 try {
                     pDialog.dismiss();
                     if(jsonObject==null){
@@ -352,13 +366,15 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             pDialog = new MaterialDialog.Builder(this)
                     .title("请输入用户名")
                     .content("用户名不能为空")
+                    .positiveText("确定")
                     .show();
             cancel = true;
         }else if(TextUtils.isEmpty(password)){
             focusView = mPasswordView;
             pDialog = new MaterialDialog.Builder(this)
-                    .title("请输入用户名")
-                    .content("用户名不能为空")
+                    .title("请输入密码")
+                    .content("密码不能为空")
+                    .positiveText("确定")
                     .show();
             cancel = true;
         }

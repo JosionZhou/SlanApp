@@ -42,14 +42,14 @@ public class BuilderManager {
             R.string.exit_sub
     };
     private static int[] colorResources=new int[]{
-            R.color.chahuo,
-            R.color.dayin,
+            R.color.mediumturquoise,
+            R.color.limegreen,
             R.color.daban,
-            R.color.qingcang,
-            R.color.blue,
-            R.color.purple,
-            R.color.firebrick,
-            R.color.green
+            R.color.teal,
+            R.color.indianred,
+            R.color.mediumaquamarine,
+            R.color.lightseagreen,
+            R.color.mediumvioletred
     };
     private static int imageResourceIndex = 0;
     private static int textResourceIndex = 0;

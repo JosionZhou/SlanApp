@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -126,7 +127,7 @@ public class PalletActivity extends AppCompatActivity {
      * @param position 板代码在列表中的索引位置
      */
     private void setPalletDetails(int position){
-        PalletInfo selectObj = palletInfoList.get(position);
+        final PalletInfo selectObj = palletInfoList.get(position);
         if(selectObj!=null && selectObj.Id!=-1){
             palletId=selectObj.Id;
             palletNo=selectObj.No;
@@ -134,6 +135,7 @@ public class PalletActivity extends AppCompatActivity {
             cbCustoms.setEnabled(false);
             cbBattery.setChecked(selectObj.IsBattery);
             cbCustoms.setChecked(selectObj.IsCustoms);
+            palletCategoriesspinner.setEnabled(false);
             Observable.create(new Observable.OnSubscribe<JSONObject>() {
                 @Override
                 public void call(Subscriber<? super JSONObject> subscriber) {
@@ -159,6 +161,12 @@ public class PalletActivity extends AppCompatActivity {
                                     shipments.add(array.getJSONObject(i).getString("Value"));
                                 }
                                 reBindShipmentsListView();
+                                for(Map.Entry<String,Integer> entry:palletCategories){
+                                    if(entry.getValue()==selectObj.CategoryId){
+                                        palletCategoriesspinner.setSelectedIndex(palletCategories.indexOf(entry));
+                                    }
+                                }
+                                etBarCode.selectAll();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -472,6 +480,7 @@ public class PalletActivity extends AppCompatActivity {
                                 .title("操作失败")
                                 .content(message)
                                 .show();
+                        etBarCode.selectAll();
                     }else{
                         cbBattery.setEnabled(false);
                         cbCustoms.setEnabled(false);

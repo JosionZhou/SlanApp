@@ -35,6 +35,7 @@ public class HttpHelper {
         if(conn!=null)
             return conn;
         else{
+            //String urlString="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
             String urlString="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
             URL url=null;
             try {
@@ -154,11 +155,13 @@ public class HttpHelper {
 
     static JSONObject getVersion() throws Exception {
         String urlString = "http://192.168.0.20:8070/Update.ashx?Action=CheckVersion&AppKey=Android";
+//        String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");// 提交模式
 //        conn.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 //        conn.setRequestProperty("Content-Type","text/plain; charset=utf-8");
+        conn.setReadTimeout(10*1000);
         InputStream stream = conn.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         String result = reader.readLine().replace("[","").replace("]","");
@@ -168,6 +171,7 @@ public class HttpHelper {
     }
     static InputStream getUpdateFile(String fileName) throws Exception {
         String urlString = "http://192.168.0.20:8070/Update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
+//        String urlString = "http://update2.sl56.com/update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");// 提交模式
