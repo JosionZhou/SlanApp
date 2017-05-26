@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -27,6 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.flyco.tablayout.SegmentTabLayout;
 import com.flyco.tablayout.listener.OnTabSelectListener;
@@ -46,11 +48,12 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private SegmentTabLayout tabLayout;
     private ArrayList<Fragment> mFragments = new ArrayList<>();
     private ArrayList<JSONArray> arrayList = new ArrayList<>();
-    private final String[] tabTitles = {"规则","问题","备注"};
+    private final String[] tabTitles = {"报价规则","其他规则","问题","备注"};
     private Button btnCheckGoods;
     private Button btnSave;
     private int receiveGoodsDetialId=0;//收货Id
     private JSONArray priceRules;//查货返回的报价规则
+    private JSONArray otherRules;//查货返回的其他规则
     private JSONArray problems;//查货返回的问题
     private String InspectionTips;//查货提示
     private Integer cellQuantity;//电池数
@@ -143,7 +146,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         }
         JSONArray changeRules = new JSONArray();
         JSONArray changeProblems = new JSONArray();
-        for(int i=0;i<2;i++) {
+        for(int i=0;i<3;i++) {
             int checkBoxCount =((ScrollViewFragment) mFragments.get(i)).getCheckboxSourceArray().length();
             for(int j=0;j<checkBoxCount;j++){
                 try {
@@ -162,6 +165,16 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         }
                         break;
                         case 1:
+                            if (otherRules.getJSONObject(j).getBoolean("IsChecked") != isCurrentCheck) {
+                                JSONObject json = new JSONObject(tagObj.toString());
+                                if (isCurrentCheck)
+                                    json.put("ChangeType", 0);
+                                else
+                                    json.put("ChangeType", 1);
+                                changeRules.put(json);
+                            }
+                            break;
+                        case 2:
                             if (problems.getJSONObject(j).getBoolean("IsChecked") != isCurrentCheck) {
                                 JSONObject json = new JSONObject(tagObj.toString());
                                 if (isCurrentCheck)
@@ -239,7 +252,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private void setTabAdapter(int type){
         FragmentManager fm = getSupportFragmentManager();
         MyPagerAdapter mpa = new MyPagerAdapter(fm,mFragments);
-        if(type==0) {
+        if(type==0) {//若是查货扫描，则重新生成CheckBox
             ArrayList<Fragment> newFragments = new ArrayList<>();
             for (JSONArray ja : arrayList) {
                 newFragments.add(new ScrollViewFragment(ja, arrayList.indexOf(ja),receiveGoodsDetialId,CheckGoodsActivity.this));
@@ -286,6 +299,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         private String alertMsg;
         private JSONObject params;
         private  String action;
+        private int status;//查货保存返回的状态值 -1：重新计算报价 0：失败 1：成功
         private int type;
 
         /**
@@ -309,35 +323,44 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     alertMsg="网络访问异常";
                     return false;
                 }
-                Boolean isSuccess = result.getBoolean("Success");
-                if(!isSuccess){
-                    alertMsg=result.getString("ErrorMessage");
-                    return false;
-                }else{
-                    switch (type) {
-                        case 0://查货扫描
-                            priceRules = result.getJSONArray("PriceRules");
-                            problems = result.getJSONArray("Problems");
-                            arrayList.clear();
-                            arrayList.add(priceRules);
-                            arrayList.add(problems);
-                            arrayList.add(null);
-                            InspectionTips = result.getString("InspectionTips");
-                            receiveGoodsDetialId = result.getInt("ReceiveGoodsDetailId");
-                            cellQuantity = result.getInt("CellQuantity");
-                            Message msg = handler.obtainMessage();
-                            msg.obj = result.getString("PriceName");
-                            msg.arg1 = result.getBoolean("IsInspection")?1:0;
-                            msg.arg2 = result.getInt("Piece");
-                            msg.sendToTarget();
-                            break;
-                        case 1://查货保存
-
-                            break;
-                    }
+                switch (type) {
+                    case 0://处理查货扫描返回的结果
+                        Boolean isSuccess = result.getBoolean("Success");
+                        if(!isSuccess){
+                            alertMsg=result.getString("ErrorMessage");
+                            return false;
+                        }
+                        priceRules = result.getJSONArray("PriceRules");
+                        otherRules = result.getJSONArray("OhterRules");
+                        problems = result.getJSONArray("Problems");
+                        arrayList.clear();
+                        arrayList.add(priceRules);//添加报价规则到第一个选项卡
+                        arrayList.add(otherRules);//添加其他报价规则到第二个选项卡
+                        arrayList.add(problems);//添加问题到第三个选项卡
+                        arrayList.add(null);//填写备注的选项卡为null
+                        InspectionTips = result.getString("InspectionTips");
+                        receiveGoodsDetialId = result.getInt("ReceiveGoodsDetailId");
+                        cellQuantity = result.getInt("CellQuantity");
+                        Message msg = handler.obtainMessage();
+                        msg.obj = result.getString("PriceName");
+                        msg.arg1 = result.getBoolean("IsInspection")?1:0;
+                        msg.arg2 = result.getInt("Piece");
+                        msg.sendToTarget();
+                        break;
+                    case 1://处理查货保存返回的结果
+                        status = result.getInt("Result");
+                        if(status==0) {
+                            alertMsg = result.getString("ErrorMessage");
+                            return false;
+                        }
+                        else if(status==-1){
+                            alertMsg=result.getString("ErrorMessage")+".系统已刷新内价";
+                            return false;
+                        }
+                        break;
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                alertMsg = e.getMessage();
                 return false;
             }
             return true;
@@ -365,6 +388,13 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 }
                 builder.content(alertMsg);
                 builder.positiveText("确定");
+                builder.onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        if(status==-1)
+                            checkGoodsScan(etReferencenumber.getText().toString());
+                    }
+                });
                 dialog = builder.show();
             }else{
                 if(type==1)

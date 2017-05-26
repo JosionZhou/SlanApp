@@ -28,7 +28,7 @@ public class BuilderManager {
             R.string.text_slan_action_qingcang,
             R.string.text_slan_action_tosite,
             R.string.text_slan_action_fromsite,
-            R.string.about,
+            R.string.groupmember,
             R.string.exit
     };
     private static int[] subTextResources=new int[]{
@@ -38,7 +38,7 @@ public class BuilderManager {
             R.string.text_slan_action_qingcang_sub,
             R.string.text_slan_action_tosite_sub,
             R.string.text_slan_action_fromsite_sub,
-            R.string.about_sub,
+            R.string.groupmember_sub,
             R.string.exit_sub
     };
     private static int[] colorResources=new int[]{

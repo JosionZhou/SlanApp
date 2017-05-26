@@ -123,7 +123,7 @@ public class PrintLabelActivity extends AppCompatActivity {
             list.add(new AbstractMap.SimpleEntry("PI967："+(result.getBoolean("IsPI967")?"是":"否"),result.getBoolean("IsPI967")));
             list.add(new AbstractMap.SimpleEntry("PI969："+(result.getBoolean("IsPI969")?"是":"否"),result.getBoolean("IsPI969")));
             list.add(new AbstractMap.SimpleEntry("PI970："+(result.getBoolean("IsPI970")?"是":"否"),result.getBoolean("IsPI970")));
-            list.add(new AbstractMap.SimpleEntry("干电池："+(result.getBoolean("DryBattery")?"是":"否"),result.getBoolean("DryBattery")));
+            list.add(new AbstractMap.SimpleEntry("干电池："+(result.getBoolean("IsDryBattery")?"是":"否"),result.getBoolean("IsDryBattery")));
         }
         ExtendAdapter ad = new ExtendAdapter(this,list);
         ListView lv = (ListView)findViewById(R.id.list);
@@ -133,13 +133,12 @@ public class PrintLabelActivity extends AppCompatActivity {
         ArrayList<Map.Entry<String,Boolean>> list = new ArrayList<>();
         list.add(new AbstractMap.SimpleEntry("渠道："+result.getString("ModeOfTransportName"),false));
         list.add(new AbstractMap.SimpleEntry("国家："+result.getString("CountryName"),false));
-        list.add(new AbstractMap.SimpleEntry("件数："+result.getInt("Piece"),false));
-        list.add(new AbstractMap.SimpleEntry("入重："+result.getDouble("Weight"),false));
+        list.add(new AbstractMap.SimpleEntry("件数："+result.getInt("Piece")+"  入重："+result.getDouble("Weight"),false));
         list.add(new AbstractMap.SimpleEntry("需要转口证："+(result.getBoolean("IsReExport")?"是":"否"),result.getBoolean("IsReExport")));
-        list.add(new AbstractMap.SimpleEntry("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"),result.getBoolean("IsCustomsDeclaration")));
+        list.add(new AbstractMap.SimpleEntry("随货资料："+(result.getBoolean("IsFollowDocument")?"是":"否"),result.getBoolean("IsFollowDocument")));
         list.add(new AbstractMap.SimpleEntry("需要发票(打印)："+(result.getBoolean("IsInvoice")?"是":"否"),result.getBoolean("IsInvoice")));
         list.add(new AbstractMap.SimpleEntry("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"),result.getBoolean("IsRequeiredInvoice")));
-        list.add(new AbstractMap.SimpleEntry("随货资料："+(result.getBoolean("IsFollowDocument")?"是":"否"),result.getBoolean("IsFollowDocument")));
+        list.add(new AbstractMap.SimpleEntry("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"),result.getBoolean("IsCustomsDeclaration")));
         return list;
     }
     private void checkIsPrinted() throws JSONException {
@@ -156,6 +155,7 @@ public class PrintLabelActivity extends AppCompatActivity {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             dialog.dismiss();
+                            etReferenceNumber.selectAll();
                             return;
                         }
                     })
@@ -171,6 +171,7 @@ public class PrintLabelActivity extends AppCompatActivity {
                                             .content("请重新输入")
                                             .positiveText("确定")
                                             .show();
+                                    etReferenceNumber.selectAll();
                                     return;
                                 }else{
                                     if(checkTime())
@@ -181,6 +182,7 @@ public class PrintLabelActivity extends AppCompatActivity {
                                                 .content("严格执行Label一出一贴原则，严禁多出多贴，违者重罚")
                                                 .positiveText("确定")
                                                 .show();
+                                    etReferenceNumber.selectAll();
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -199,6 +201,7 @@ public class PrintLabelActivity extends AppCompatActivity {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             try {
+                                etReferenceNumber.selectAll();
                                 if(checkTime())
                                     doPrint(false);
                                 else

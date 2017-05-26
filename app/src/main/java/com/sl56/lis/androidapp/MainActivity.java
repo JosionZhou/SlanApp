@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                         it = new Intent(MainActivity.this,FromSiteActivity.class);
                         break;
                     case 2:
+                        it = new Intent(MainActivity.this,StationMemberSettingActivity.class);
                         break;
                     case 3:
                         System.exit(0);

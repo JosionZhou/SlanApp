@@ -84,29 +84,29 @@ public class HttpHelper {
     /*
     * HttpClient已不推荐使用，已被弃用
     * */
-    private static String execPost1(String action,JSONObject data)
-    {
-        HttpClient client=createHttpClient();
-        String uri="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
-        HttpPost request=new HttpPost(uri);
-        //RequestConfig config = RequestConfig.custom().setSocketTimeout(30*1000).setConnectTimeout(30*1000).build();
-        //request.setConfig(config);
-        try {
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-            StringEntity requestEntity = new StringEntity(data.toString());
-            request.setEntity(requestEntity);
-            HttpResponse response= client.execute(request);
-            HttpEntity entity=response.getEntity();
-            String responseContent= EntityUtils.toString(entity,"UTF-8");
-            if(responseContent.isEmpty())
-                return String.format("{'Error':%s","'用户名或密码错误'}");
-            else
-                return responseContent;
-        } catch (IOException e) {
-            return String.format("{'Error':%s","'"+e.getMessage()+"'}");
-        }
-    }
+//    private static String execPost1(String action,JSONObject data)
+//    {
+//        HttpClient client=createHttpClient();
+//        String uri="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
+//        HttpPost request=new HttpPost(uri);
+//        //RequestConfig config = RequestConfig.custom().setSocketTimeout(30*1000).setConnectTimeout(30*1000).build();
+//        //request.setConfig(config);
+//        try {
+//            request.setHeader("Accept", "application/json");
+//            request.setHeader("Content-Type", "application/json");
+//            StringEntity requestEntity = new StringEntity(data.toString());
+//            request.setEntity(requestEntity);
+//            HttpResponse response= client.execute(request);
+//            HttpEntity entity=response.getEntity();
+//            String responseContent= EntityUtils.toString(entity,"UTF-8");
+//            if(responseContent.isEmpty())
+//                return String.format("{'Error':%s","'用户名或密码错误'}");
+//            else
+//                return responseContent;
+//        } catch (IOException e) {
+//            return String.format("{'Error':%s","'"+e.getMessage()+"'}");
+//        }
+//    }
     /*
     * 推荐使用HttpURLConnection来进行网络通信
     * */

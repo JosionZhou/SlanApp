@@ -14,6 +14,7 @@
     <string name="text_slan_action_fromsite">操作点接货</string>
     <string name="exit">退出</string>
     <string name="about">关于</string>
+    <string name="groupmember">组成员</string>
     <string name="text_slan_action_chahuo_sub">严查各种违禁品</string>
     <string name="text_slan_action_dayin_sub">打印Label</string>
     <string name="text_slan_action_daban_sub">货物打板</string>
@@ -23,6 +24,7 @@
     <string name="text_slan_action_fromsite_sub">接收分公司的货</string>
     <string name="exit_sub">退出当前程序</string>
     <string name="about_sub">系统说明</string>
+    <string name="groupmember_sub">岗位成员设置</string>
     <string name="login">登录</string>
     <string name="prompt_userNo">输入用户名</string>
     <string name="prompt_password">输入密码</string>
