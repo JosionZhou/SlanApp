@@ -459,9 +459,7 @@ public class StationMemberSettingActivity extends AppCompatActivity {
          .observeOn(AndroidSchedulers.mainThread())
          .subscribe(new Subscriber<JSONObject>() {
              @Override
-             public void onCompleted() {
-                 dialog.dismiss();
-             }
+             public void onCompleted() {}
 
              @Override
              public void onError(Throwable e) {
@@ -470,8 +468,17 @@ public class StationMemberSettingActivity extends AppCompatActivity {
 
              @Override
              public void onNext(JSONObject array) {
-
-
+                 dialog.dismiss();
+                 try {
+                     dialog = new MaterialDialog.Builder(StationMemberSettingActivity.this)
+                             .content(array.getString("Contents"))
+                             .cancelable(false)
+                             .title(array.toString().contains("成功")?"保存成功":"保存失败")
+                             .positiveText("确定")
+                             .show();
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                 }
              }
          });
 

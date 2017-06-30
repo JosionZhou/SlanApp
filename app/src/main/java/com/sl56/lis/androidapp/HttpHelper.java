@@ -1,5 +1,7 @@
 package com.sl56.lis.androidapp;
 
+import android.renderscript.Sampler;
+
 import org.apache.http.HttpConnection;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -21,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.Key;
 
 import org.apache.http.client.methods.HttpPost;
 
@@ -75,7 +78,11 @@ public class HttpHelper {
                     res = new JSONObject("{\"Details\":"+responseContent+"}");
                 }
             } catch (JSONException e1) {
-                return res;
+                try {
+                    return new JSONObject("{\"Contents\":"+responseContent+"}");
+                } catch (JSONException e2) {
+                    e2.printStackTrace();
+                }
             }
             return res;
         }
