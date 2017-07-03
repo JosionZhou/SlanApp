@@ -19,6 +19,8 @@ import com.nightonke.boommenu.ButtonEnum;
 import com.nightonke.boommenu.OnBoomListener;
 import com.nightonke.boommenu.Piece.PiecePlaceEnum;
 
+import org.json.JSONException;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -150,6 +152,13 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < rightBmb.getPiecePlaceEnum().pieceNumber(); i++){
             HamButton.Builder builder = BuilderManager.getSlanHamButtonBuilder();
             rightBmb.addBuilder(builder);
+        }
+
+        try {
+            //根据权限来设置组成员菜单是否可用
+            rightBmb.getBuilders().get(2).setUnable(!Global.getHeader().getBoolean("CanEditGroupMember"));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
 //        rightBmb.setButtonEnum(ButtonEnum.Ham);
