@@ -39,6 +39,7 @@ public class ScrollViewFragment extends Fragment {
     private String remarkText="";
     private int fragmentIndex;
     private Context context;
+    private Boolean isRulesChanged;
 
     /**
      *
@@ -49,6 +50,7 @@ public class ScrollViewFragment extends Fragment {
      */
     public ScrollViewFragment(JSONArray array,int fragmentIndex,int receiveGoodsDetailId,Context context){
         if(array!=null) {
+            isRulesChanged=false;
             this.fragmentIndex= fragmentIndex;
             this.array = new JSONArray();
             this.context=context;
@@ -92,18 +94,35 @@ public class ScrollViewFragment extends Fragment {
                     }catch(JSONException ex){
                         text=array.getJSONObject(i).getString("Name");
                     }
-                    Boolean isChecked = array.getJSONObject(i).getBoolean("IsChecked");
+                    Boolean isChecked;
+                    if(!array.getJSONObject(i).isNull("OldIsChecked")) {
+                        isChecked = array.getJSONObject(i).getBoolean("OldIsChecked");
+                        //初始化时，NewIsChecked等于OldIsChecked
+                        if(!isRulesChanged)
+                            array.getJSONObject(i).put("NewIsChecked",isChecked);
+                        else
+                            isChecked = array.getJSONObject(i).getBoolean("NewIsChecked");
+                    }
+                    else
+                        isChecked = array.getJSONObject(i).getBoolean("IsChecked");
                     v.setText(text);
                     v.setChecked(isChecked);
                     if(isChecked && fragmentIndex==1)//问题移除功能未做好，若wcf端已完善移除问题的功能，则去除此代码即可
                             v.setEnabled(false);//已保存的问题项，暂不允许移除
                     v.setTag(array.getJSONObject(i));
+                    //为复选框绑定事件
                     v.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+                        //只对复选框为电池和人工扣货的做特殊处理
                         @Override
                         public void onChange(final boolean checked) {
                             try {
                                 final JSONObject tagObj =(JSONObject) v.getTag();
-                                tagObj.put("IsChecked",checked);
+                                if(tagObj.isNull("IsChecked")) {
+                                    tagObj.put("NewIsChecked", checked);
+                                    isRulesChanged=true;
+                                }
+                                else
+                                    tagObj.put("IsChecked",checked);
                                 //若是选择了电池，则弹出电池数量输入框
                                 if((tagObj.getString("Name").contains("PI")||tagObj.getString("Name").contains("电池"))) {
                                     if(checked) {
@@ -137,7 +156,9 @@ public class ScrollViewFragment extends Fragment {
                                                 .positiveText("确定")
                                                 .show();
                                     }else cellQuantity=0;
-                                }else if((tagObj.getString("Name").contains("人工扣货"))){
+                                }
+                                //若是人工扣货
+                                else if((tagObj.getString("Name").contains("人工扣货"))){
                                     if(checked) {
                                         new MaterialDialog.Builder(context)
                                                 .title("请输入扣货备注")

@@ -2,6 +2,8 @@ package com.sl56.lis.androidapp;
 
 import org.json.JSONObject;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 
@@ -32,4 +34,18 @@ public class Global {
     }
 
     public static List<Map.Entry<String,Integer>> Sites;
+    public static String getMD5(String pwd) throws NoSuchAlgorithmException {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+            byte[] bytes = md5.digest(pwd.getBytes());
+            String result = "";
+            for (byte b : bytes) {
+                String temp = Integer.toHexString(b & 0xff);
+                if (temp.length() == 1) {
+                    temp = "0" + temp;
+                }
+                result += temp;
+            }
+            return result;
+    }
+
 }

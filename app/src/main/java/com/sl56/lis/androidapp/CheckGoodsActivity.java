@@ -16,6 +16,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.MenuBuilder;
 import android.text.method.DigitsKeyListener;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -129,6 +130,12 @@ public class CheckGoodsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.checkgoodsmenu, menu);
+        try {
+            //根据权限是否显示组成员菜单按钮
+            menu.getItem(0).setVisible(Global.getHeader().getBoolean("CanEditGroupMember"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -144,39 +151,34 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     .show();
             return;
         }
-        JSONArray changeRules = new JSONArray();
+        JSONArray rules = new JSONArray();
         JSONArray changeProblems = new JSONArray();
         for(int i=0;i<3;i++) {
             int checkBoxCount =((ScrollViewFragment) mFragments.get(i)).getCheckboxSourceArray().length();
             for(int j=0;j<checkBoxCount;j++){
                 try {
                     JSONObject tagObj = ((ScrollViewFragment) mFragments.get(i)).getCheckboxSourceArray().getJSONObject(j);
-                    Boolean isCurrentCheck = tagObj.getBoolean("IsChecked");
+                    Boolean isCurrentCheck;
+                    if(tagObj.isNull("IsChecked"))
+                        isCurrentCheck= tagObj.getBoolean("NewIsChecked");
+                    else
+                        isCurrentCheck= tagObj.getBoolean("IsChecked");
                     //判断保存时复选框的状态和加载时是否一样
+                    JSONObject json =null;
                     switch(i) {
                         case 0:
-                        if (priceRules.getJSONObject(j).getBoolean("IsChecked") != isCurrentCheck) {
-                            JSONObject json = new JSONObject(tagObj.toString());
-                            if (isCurrentCheck)
-                                json.put("ChangeType", 0);
-                            else
-                                json.put("ChangeType", 1);
-                                changeRules.put(json);
-                        }
+                            json = new JSONObject(tagObj.toString());
+                            json.put("NewIsChecked",isCurrentCheck);
+                            rules.put(json);
                         break;
                         case 1:
-                            if (otherRules.getJSONObject(j).getBoolean("IsChecked") != isCurrentCheck) {
-                                JSONObject json = new JSONObject(tagObj.toString());
-                                if (isCurrentCheck)
-                                    json.put("ChangeType", 0);
-                                else
-                                    json.put("ChangeType", 1);
-                                changeRules.put(json);
-                            }
+                            json = new JSONObject(tagObj.toString());
+                            json.put("NewIsChecked",isCurrentCheck);
+                            rules.put(json);
                             break;
                         case 2:
                             if (problems.getJSONObject(j).getBoolean("IsChecked") != isCurrentCheck) {
-                                JSONObject json = new JSONObject(tagObj.toString());
+                                json = new JSONObject(tagObj.toString());
                                 if (isCurrentCheck)
                                     json.put("ChangeType", 0);
                                 else
@@ -193,7 +195,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         JSONObject jsonParams = new JSONObject();
         try {
             jsonParams.put("receiveGoodsDetailId",receiveGoodsDetialId);
-            jsonParams.put("changedRules",changeRules);
+            jsonParams.put("rules",rules);
             jsonParams.put("problems",changeProblems);
             jsonParams.put("remark",((ScrollViewFragment)mFragments.get(1)).getRemarkText()+"；"+((ScrollViewFragment)mFragments.get(2)).getRemarkText());
             jsonParams.put("header",Global.getHeader());

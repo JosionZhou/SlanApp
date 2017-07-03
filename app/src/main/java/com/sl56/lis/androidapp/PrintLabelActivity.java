@@ -164,7 +164,7 @@ public class PrintLabelActivity extends AppCompatActivity {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
                             try {
-                                if(!Global.getHeader().getString("Password").equals(input.toString())){
+                                if(Global.getHeader().getString("ConfirmPassword").indexOf(Global.getMD5(input.toString()))==-1){
                                     Toast.makeText(PrintLabelActivity.this,"密码不正确",Toast.LENGTH_SHORT);
                                     new MaterialDialog.Builder(PrintLabelActivity.this)
                                             .title("密码错误")
@@ -184,7 +184,7 @@ public class PrintLabelActivity extends AppCompatActivity {
                                                 .show();
                                     etReferenceNumber.selectAll();
                                 }
-                            } catch (JSONException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                             dialog.dismiss();
