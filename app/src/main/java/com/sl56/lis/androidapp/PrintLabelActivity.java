@@ -22,11 +22,16 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Attr;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class PrintLabelActivity extends AppCompatActivity {
@@ -38,6 +43,8 @@ public class PrintLabelActivity extends AppCompatActivity {
     private int transportDocumentId;
     private JSONObject result;
     private Long lastPrintTime;
+    //制单附件信息
+    private HashMap<String,String> attachments = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +89,7 @@ public class PrintLabelActivity extends AppCompatActivity {
             VibratorHelper.shock(PrintLabelActivity.this);
         }
         else{
+            attachments = new HashMap<>();
             imm.hideSoftInputFromWindow(etReferenceNumber.getWindowToken(), 0); //强制隐藏键盘
             dialog = new MaterialDialog.Builder(this)
                     .content("获取数据中...")
@@ -117,7 +125,7 @@ public class PrintLabelActivity extends AppCompatActivity {
             list.add(new AbstractMap.SimpleEntry("转单号："+result.getString("TrackNumber"),false));
             list.add(new AbstractMap.SimpleEntry("Label："+(result.getBoolean("IsPrint")?"已打印":"未打印"),false));
         }else if(result.getString("ModeOfTransportName").toUpperCase().contains("FEDEX") || result.getString("ModeOfTransportName").toUpperCase().contains("UPS")){
-            list.add(new AbstractMap.SimpleEntry("需要电池信："+(result.getBoolean("IsBatteryLetter")?"是":"否"),result.getBoolean("IsBatteryLetter")));
+            //list.add(new AbstractMap.SimpleEntry("需要电池信："+(result.getBoolean("IsBatteryLetter")?"是":"否"),result.getBoolean("IsBatteryLetter")));
             list.add(new AbstractMap.SimpleEntry("账号："+result.getString("AccountNumber"),false));
             list.add(new AbstractMap.SimpleEntry("PI966："+(result.getBoolean("IsPI966")?"是":"否"),result.getBoolean("IsPI966")));
             list.add(new AbstractMap.SimpleEntry("PI967："+(result.getBoolean("IsPI967")?"是":"否"),result.getBoolean("IsPI967")));
@@ -134,12 +142,22 @@ public class PrintLabelActivity extends AppCompatActivity {
         list.add(new AbstractMap.SimpleEntry("渠道："+result.getString("ModeOfTransportName"),false));
         list.add(new AbstractMap.SimpleEntry("国家："+result.getString("CountryName"),false));
         list.add(new AbstractMap.SimpleEntry("件数："+result.getInt("Piece")+"  入重："+result.getDouble("Weight"),false));
-        list.add(new AbstractMap.SimpleEntry("需要转口证："+(result.getBoolean("IsReExport")?"是":"否"),result.getBoolean("IsReExport")));
-        list.add(new AbstractMap.SimpleEntry("随货资料："+(result.getBoolean("IsFollowDocument")?"是":"否"),result.getBoolean("IsFollowDocument")));
-        list.add(new AbstractMap.SimpleEntry("需要发票(打印)："+(result.getBoolean("IsInvoice")?"是":"否"),result.getBoolean("IsInvoice")));
-        list.add(new AbstractMap.SimpleEntry("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"),result.getBoolean("IsRequeiredInvoice")));
+        //list.add(new AbstractMap.SimpleEntry("需要转口证："+(result.getBoolean("IsReExport")?"是":"否"),result.getBoolean("IsReExport")));
+        //list.add(new AbstractMap.SimpleEntry("随货资料："+(result.getBoolean("IsFollowDocument")?"是":"否"),result.getBoolean("IsFollowDocument")));
+        //list.add(new AbstractMap.SimpleEntry("需要发票(打印)："+(result.getBoolean("IsInvoice")?"是":"否"),result.getBoolean("IsInvoice")));
+        //list.add(new AbstractMap.SimpleEntry("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"),result.getBoolean("IsRequeiredInvoice")));
         list.add(new AbstractMap.SimpleEntry("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"),result.getBoolean("IsCustomsDeclaration")));
+        list.addAll(getAttachmentInfos());
         return list;
+    }
+    private ArrayList getAttachmentInfos() throws JSONException{
+        ArrayList<Map.Entry<String,Boolean>> list = new ArrayList<>();
+        Iterator it = attachments.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry<String,String> entry = (Map.Entry<String,String>)it.next();
+            list.add(new AbstractMap.SimpleEntry(entry.getKey()+":"+entry.getValue(),true));
+        }
+        return  list;
     }
     private void checkIsPrinted() throws JSONException {
         Boolean isPrinted = result.getBoolean("IsPrint");
@@ -279,6 +297,12 @@ public class PrintLabelActivity extends AppCompatActivity {
                     return false;
                 }
                 transportDocumentId = result.getInt("TransportDocumentId");
+                JSONArray atts = result.getJSONArray("Attachments");
+                if(atts!=null) {
+                    for(int i=0;i<atts.length();i++){
+                        attachments.put(atts.getJSONObject(i).getString("Key"),atts.getJSONObject(i).getString("Value"));
+                    }
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }

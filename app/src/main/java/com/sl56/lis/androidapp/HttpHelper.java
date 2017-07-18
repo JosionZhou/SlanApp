@@ -34,36 +34,7 @@ import org.apache.http.client.methods.HttpPost;
 public class HttpHelper {
 
     private static HttpURLConnection conn;
-    private static HttpURLConnection getConnection(String action){
-        if(conn!=null)
-            return conn;
-        else{
-            //String urlString="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
-            String urlString="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
-            URL url=null;
-            try {
-                url = new URL(urlString);
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");// 提交模式
-                conn.setRequestProperty("Accept", "application/json");
-                conn.setRequestProperty("Content-Type", "application/json");
-                //设置连接超时30秒
-                conn.setConnectTimeout(30 * 1000);
-                // 发送POST请求必须设置如下两行
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setInstanceFollowRedirects(false);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            return conn;
-        }
-    }
-    private static HttpClient createHttpClient(){
-        HttpClient client=new DefaultHttpClient();
-        return client;
-    }
+
     public  static JSONObject getJSONObjectFromUrl(String action, JSONObject data){
         String responseContent=execPost(action,data);
         if(responseContent==null || responseContent.trim().isEmpty())return null;
@@ -88,32 +59,6 @@ public class HttpHelper {
         }
         return  res;
     }
-    /*
-    * HttpClient已不推荐使用，已被弃用
-    * */
-//    private static String execPost1(String action,JSONObject data)
-//    {
-//        HttpClient client=createHttpClient();
-//        String uri="http://192.168.0.20:8011/MobileServiceV2.svc/http/"+action;
-//        HttpPost request=new HttpPost(uri);
-//        //RequestConfig config = RequestConfig.custom().setSocketTimeout(30*1000).setConnectTimeout(30*1000).build();
-//        //request.setConfig(config);
-//        try {
-//            request.setHeader("Accept", "application/json");
-//            request.setHeader("Content-Type", "application/json");
-//            StringEntity requestEntity = new StringEntity(data.toString());
-//            request.setEntity(requestEntity);
-//            HttpResponse response= client.execute(request);
-//            HttpEntity entity=response.getEntity();
-//            String responseContent= EntityUtils.toString(entity,"UTF-8");
-//            if(responseContent.isEmpty())
-//                return String.format("{'Error':%s","'用户名或密码错误'}");
-//            else
-//                return responseContent;
-//        } catch (IOException e) {
-//            return String.format("{'Error':%s","'"+e.getMessage()+"'}");
-//        }
-//    }
     /*
     * 推荐使用HttpURLConnection来进行网络通信
     * */

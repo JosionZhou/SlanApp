@@ -154,13 +154,6 @@ public class MainActivity extends AppCompatActivity {
             rightBmb.addBuilder(builder);
         }
 
-        try {
-            //根据权限来设置组成员菜单是否可用
-            rightBmb.getBuilders().get(2).setUnable(!Global.getHeader().getBoolean("CanEditGroupMember"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
 //        rightBmb.setButtonEnum(ButtonEnum.Ham);
 //        rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
 //        rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);

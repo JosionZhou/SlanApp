@@ -37,8 +37,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -111,9 +113,29 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                         getCompanyList();
                         return;
                     }
-                    String version = jsonObject.getString("Version");
-                    int flag = compareVersion(getPackageManager().getPackageInfo(getPackageName(),0).versionName,version);
-                    if(flag<0){//当前版本比服务器版本低
+                    String serverPublishDate = jsonObject.getString("PublishDate");
+                    String localPublicshDate=null;
+                    Boolean isUpdate=false;
+                    DBHelper db = new DBHelper(LoginActivity.this);
+                    Cursor cursor = db.Fetch("PublishDate");//从数据库获取更新日期
+                    if(cursor.getCount()>0){
+                        cursor.moveToFirst();
+                        localPublicshDate = cursor.getString(1);
+                    }
+                    if(localPublicshDate==null){
+                        isUpdate=true;
+                        db.Inert("PublishDate",serverPublishDate);
+                    }
+                    else
+                    {
+                        Date localDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(localPublicshDate);
+                        Date serverDate =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(serverPublishDate);
+                        if(serverDate.getTime()>localDate.getTime()) {
+                            isUpdate = true;
+                            db.Inert("PublishDate",serverPublishDate);
+                        }
+                    }
+                    if(isUpdate){
                         pDialog = new MaterialDialog.Builder(LoginActivity.this)
                                 .content("正在下载更新...")
                                 .progress(true,0)

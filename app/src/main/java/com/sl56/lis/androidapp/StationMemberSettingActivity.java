@@ -427,6 +427,12 @@ public class StationMemberSettingActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.stationsettingmenu, menu);
         mMenu=menu;
+        try {
+            //根据权限是否显示组成员菜单按钮
+            menu.getItem(1).setEnabled(Global.getHeader().getBoolean("CanEditGroupMember"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return super.onCreateOptionsMenu(menu);
     }
 

@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.transition.Visibility;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -59,6 +60,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private String InspectionTips;//查货提示
     private Integer cellQuantity;//电池数
     private Boolean isChecked;//是否已经查货
+    private int piece;//件数
     private SetPriceNameHandler handler = new SetPriceNameHandler();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,12 +132,6 @@ public class CheckGoodsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.checkgoodsmenu, menu);
-        try {
-            //根据权限是否显示组成员菜单按钮
-            menu.getItem(0).setVisible(Global.getHeader().getBoolean("CanEditGroupMember"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -343,10 +339,11 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         InspectionTips = result.getString("InspectionTips");
                         receiveGoodsDetialId = result.getInt("ReceiveGoodsDetailId");
                         cellQuantity = result.getInt("CellQuantity");
+                        piece = result.getInt("Piece");
                         Message msg = handler.obtainMessage();
                         msg.obj = result.getString("PriceName");
                         msg.arg1 = result.getBoolean("IsInspection")?1:0;
-                        msg.arg2 = result.getInt("Piece");
+                        msg.arg2 = piece;
                         msg.sendToTarget();
                         break;
                     case 1://处理查货保存返回的结果
@@ -399,17 +396,29 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 });
                 dialog = builder.show();
             }else{
-                if(type==1)
-                    Toast.makeText(CheckGoodsActivity.this,"保存成功",Toast.LENGTH_SHORT);
-                if(!InspectionTips.isEmpty()){
-                    dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
-                            .title("查货提示")
-                            .content(InspectionTips)
-                            .positiveText("确定")
-                            .show();
-                    VibratorHelper.shock(CheckGoodsActivity.this);
+                if(type==1){
+                    Message msg = handler.obtainMessage();
+                    msg.arg1=1;
+                    msg.arg2=piece;
+                    msg.sendToTarget();
+                    ViewPager vpMaind = (ViewPager) findViewById(R.id.vpMain);
+                    //保存查货后隐藏选项卡，避免误操作
+                    vpMaind.setVisibility(View.GONE);
                 }
-                setTabAdapter(type);
+                if(type==0) {
+                    ViewPager vpMaind = (ViewPager) findViewById(R.id.vpMain);
+                    //查货扫描时显示选项卡
+                    vpMaind.setVisibility(View.VISIBLE);
+                    if (!InspectionTips.isEmpty()) {
+                        dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
+                                .title("查货提示")
+                                .content(InspectionTips)
+                                .positiveText("确定")
+                                .show();
+                        VibratorHelper.shock(CheckGoodsActivity.this);
+                    }
+                    setTabAdapter(type);
+                }
             }
         }
     }
@@ -462,7 +471,8 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private class SetPriceNameHandler extends Handler{
         @Override
         public void handleMessage(Message msg) {
-            tvPriceName.setText(msg.obj.toString());
+            if(msg.obj!=null)
+                tvPriceName.setText(msg.obj.toString());
             tvCheckInfo.setText("共 "+msg.arg2+" 件； "+"是否查货："+(msg.arg1==0?"否":"是"));
             isChecked = !(msg.arg1==0);
         }

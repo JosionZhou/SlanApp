@@ -107,7 +107,7 @@ public class ScrollViewFragment extends Fragment {
                         isChecked = array.getJSONObject(i).getBoolean("IsChecked");
                     v.setText(text);
                     v.setChecked(isChecked);
-                    if(isChecked && fragmentIndex==1)//问题移除功能未做好，若wcf端已完善移除问题的功能，则去除此代码即可
+                    if(isChecked && fragmentIndex==2)//问题移除功能未做好，若wcf端已完善移除问题的功能，则去除此代码即可
                             v.setEnabled(false);//已保存的问题项，暂不允许移除
                     v.setTag(array.getJSONObject(i));
                     //为复选框绑定事件

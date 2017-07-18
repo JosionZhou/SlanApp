@@ -305,12 +305,6 @@ public class PalletActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.barmenu, menu);
-        try {
-            //根据权限是否显示组成员菜单按钮
-            menu.getItem(1).setVisible(Global.getHeader().getBoolean("CanEditGroupMember"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         return super.onCreateOptionsMenu(menu);
     }
 
