@@ -1,5 +1,6 @@
 package com.sl56.lis.androidapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.AsyncTask;
@@ -8,7 +9,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.transition.Visibility;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -17,18 +17,15 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.menu.MenuBuilder;
 import android.text.method.DigitsKeyListener;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -40,6 +37,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 public class CheckGoodsActivity extends AppCompatActivity {
     private EditText etReferencenumber;
@@ -53,7 +56,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private final String[] tabTitles = {"报价规则","其他规则","问题","备注"};
     private Button btnCheckGoods;
     private Button btnSave;
-    private int receiveGoodsDetialId=0;//收货Id
+    private int receiveGoodsDetailId =0;//收货Id
     private JSONArray priceRules;//查货返回的报价规则
     private JSONArray otherRules;//查货返回的其他规则
     private JSONArray problems;//查货返回的问题
@@ -62,6 +65,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private Boolean isChecked;//是否已经查货
     private int piece;//件数
     private SetPriceNameHandler handler = new SetPriceNameHandler();
+    private boolean isProgressDialogShowing =false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +87,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    final String referenceNumber = ((EditText) findViewById(R.id.etreferencenumber)).getText().toString();
-                    checkGoodsScan(referenceNumber);
+                    checkGoodsScan();
                     return true;
                 }
                 return false;
@@ -101,8 +104,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         btnCheckGoods.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String referenceNumber = ((EditText) findViewById(R.id.etreferencenumber)).getText().toString();
-                checkGoodsScan(referenceNumber);
+                checkGoodsScan();
             }
         });
 
@@ -124,6 +126,19 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 Intent intent2 = new Intent(CheckGoodsActivity.this, StationMemberSettingActivity.class);
                 CheckGoodsActivity.this.startActivity(intent2);
                 break;
+            case R.id.hscode:
+                if(receiveGoodsDetailId ==0){
+                    dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
+                            .title("请先查货")
+                            .content("先查货再添加海关编码")
+                            .positiveText("确定")
+                            .show();
+                    return false;
+                }
+                Intent intent3 = new Intent(CheckGoodsActivity.this, HSCodeListActivity.class);
+                intent3.putExtra("receiveGoodsDetailId", receiveGoodsDetailId);
+                CheckGoodsActivity.this.startActivity(intent3);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -139,7 +154,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
      * 保存查货
      */
     private void saveCheckGoods(){
-        if(receiveGoodsDetialId==0){
+        if(receiveGoodsDetailId ==0){
             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                     .title("保存失败")
                     .content("请扫描单号成功后再保存")
@@ -190,7 +205,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         }
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("receiveGoodsDetailId",receiveGoodsDetialId);
+            jsonParams.put("receiveGoodsDetailId", receiveGoodsDetailId);
             jsonParams.put("rules",rules);
             jsonParams.put("problems",changeProblems);
             jsonParams.put("remark",((ScrollViewFragment)mFragments.get(1)).getRemarkText()+"；"+((ScrollViewFragment)mFragments.get(2)).getRemarkText());
@@ -208,17 +223,50 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 .content("正在保存数据...")
                 .progress(true,0)
                 .show();
-//        dialog.setTitleText("正在保存数据...");
-//        dialog.show();
+        isProgressDialogShowing=true;
+        Observable.create(new Observable.OnSubscribe<Boolean>() {
+            @Override
+            public void call(Subscriber<? super Boolean> subscriber) {
+                try {
+                    Thread.sleep(10*1000);
+                    subscriber.onNext(isProgressDialogShowing);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(final Boolean isShowing) {
+                        if(isShowing){
+                            VibratorHelper.shock(CheckGoodsActivity.this);
+                            dialog.dismiss();
+                            dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
+                                    .content("操作失败，是否重新获取数据？")
+                                    .cancelable(false)
+                                    .positiveText("是")
+                                    .negativeText("否")
+                                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                        @Override
+                                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                            saveCheckGoods();
+                                        }
+                                    })
+                                    .show();
+                        }
+                    }
+                });
         task = new CheckGoodsTask("InspectionSave",jsonParams,1);
         task.execute();
     }
 
     /**
      * 查货扫描
-     * @param referenceNumber 扫描的原单号
      */
-    private void checkGoodsScan(String referenceNumber) {
+    private void checkGoodsScan() {
+        String referenceNumber = ((EditText) findViewById(R.id.etreferencenumber)).getText().toString();
         if(referenceNumber.trim().isEmpty()) {
             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                     .title("请输入单号")
@@ -237,7 +285,49 @@ public class CheckGoodsActivity extends AppCompatActivity {
             dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
                     .content("正在获取数据...")
                     .progress(true,0)
+                    .dismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            isProgressDialogShowing=false;
+                        }
+                    })
                     .show();
+            isProgressDialogShowing=true;
+            //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
+            Observable.create(new Observable.OnSubscribe<Boolean>() {
+                @Override
+                public void call(Subscriber<? super Boolean> subscriber) {
+                    try {
+                        Thread.sleep(10*1000);
+                        subscriber.onNext(isProgressDialogShowing);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Action1<Boolean>() {
+                @Override
+                public void call(final Boolean isShowing) {
+                    if(isShowing){
+                        VibratorHelper.shock(CheckGoodsActivity.this);
+                        dialog.dismiss();
+                        dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
+                                .content("数据获取失败，是否重新获取？")
+                                .cancelable(false)
+                                .positiveText("是")
+                                .negativeText("否")
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        checkGoodsScan();
+                                    }
+                                })
+                                .show();
+                    }
+                }
+            });
             task=new CheckGoodsTask("InspectionScan",params,0);
             task.execute();
         }
@@ -253,7 +343,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         if(type==0) {//若是查货扫描，则重新生成CheckBox
             ArrayList<Fragment> newFragments = new ArrayList<>();
             for (JSONArray ja : arrayList) {
-                newFragments.add(new ScrollViewFragment(ja, arrayList.indexOf(ja),receiveGoodsDetialId,CheckGoodsActivity.this));
+                newFragments.add(new ScrollViewFragment(ja, arrayList.indexOf(ja), receiveGoodsDetailId,CheckGoodsActivity.this));
             }
             mpa.setFragments(newFragments);
             mFragments.clear();
@@ -337,7 +427,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         arrayList.add(problems);//添加问题到第三个选项卡
                         arrayList.add(null);//填写备注的选项卡为null
                         InspectionTips = result.getString("InspectionTips");
-                        receiveGoodsDetialId = result.getInt("ReceiveGoodsDetailId");
+                        receiveGoodsDetailId = result.getInt("ReceiveGoodsDetailId");
                         cellQuantity = result.getInt("CellQuantity");
                         piece = result.getInt("Piece");
                         Message msg = handler.obtainMessage();
@@ -356,6 +446,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             alertMsg=result.getString("ErrorMessage")+".系统已刷新内价";
                             return false;
                         }
+                        isProgressDialogShowing=false;
                         break;
                 }
             } catch (JSONException e) {
@@ -391,7 +482,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         if(status==-1)
-                            checkGoodsScan(etReferencenumber.getText().toString());
+                            checkGoodsScan();
                     }
                 });
                 dialog = builder.show();

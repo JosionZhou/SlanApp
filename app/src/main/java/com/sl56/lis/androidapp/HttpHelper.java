@@ -33,8 +33,6 @@ import org.apache.http.client.methods.HttpPost;
 
 public class HttpHelper {
 
-    private static HttpURLConnection conn;
-
     public  static JSONObject getJSONObjectFromUrl(String action, JSONObject data){
         String responseContent=execPost(action,data);
         if(responseContent==null || responseContent.trim().isEmpty())return null;
@@ -101,9 +99,6 @@ public class HttpHelper {
         return lines;
     }
 
-    public static HttpURLConnection getConn() {
-        return conn;
-    }
 
     static JSONObject getVersion() throws Exception {
 //        String urlString = "http://192.168.0.20:8070/Update.ashx?Action=CheckVersion&AppKey=Android";

@@ -10,7 +10,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/icon"
@@ -49,7 +50,13 @@
         <activity
             android:name=".FromSiteActivity"
             android:label="@string/text_slan_action_fromsite" />
-        <activity android:name=".AboutActivity" android:label="@string/about"></activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/about" />
+        <activity
+            android:name=".HSCodeListActivity"
+            android:label="@string/text_slan_activity_hscode" />
+        <activity android:name=".AddHSCodeActivity" android:label="@string/text_add_hscode"></activity>
     </application>
 
 </manifest>

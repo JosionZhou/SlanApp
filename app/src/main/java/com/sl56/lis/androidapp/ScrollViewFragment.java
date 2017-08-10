@@ -159,21 +159,21 @@ public class ScrollViewFragment extends Fragment {
                                 }
                                 //若是人工扣货
                                 else if((tagObj.getString("Name").contains("人工扣货"))){
-                                    if(checked) {
-                                        new MaterialDialog.Builder(context)
-                                                .title("请输入扣货备注")
-                                                .cancelable(false)
-                                                //.negativeText("取消")
-                                                .inputType(InputType.TYPE_CLASS_TEXT)
-                                                .input("扣货备注", "", false, new MaterialDialog.InputCallback() {
-                                                    @Override
-                                                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                                                        if(input!=null && !input.toString().trim().isEmpty())
-                                                            remarkText += ("；"+input.toString());
-                                                    }
-                                                })
-                                                .show();
-                                    }
+//                                    if(checked) {
+//                                        new MaterialDialog.Builder(context)
+//                                                .title("请输入扣货备注")
+//                                                .cancelable(false)
+//                                                //.negativeText("取消")
+//                                                .inputType(InputType.TYPE_CLASS_TEXT)
+//                                                .input("扣货备注", "", false, new MaterialDialog.InputCallback() {
+//                                                    @Override
+//                                                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+//                                                        if(input!=null && !input.toString().trim().isEmpty())
+//                                                            remarkText += ("；"+input.toString());
+//                                                    }
+//                                                })
+//                                                .show();
+//                                    }
                                 }
                                 //选择有添加费用的报价规则时弹出提示框(因服务器端已禁止子对象公式运算，此功能暂时注释)
 //                                if(checked && fragmentIndex==0){

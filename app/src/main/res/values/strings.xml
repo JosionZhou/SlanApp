@@ -12,6 +12,8 @@
     <string name="text_slan_action_setting">设置</string>
     <string name="text_slan_action_tosite">操作点出货</string>
     <string name="text_slan_action_fromsite">操作点接货</string>
+    <string name="text_slan_activity_hscode">海关编码</string>
+    <string name="text_add_hscode">添加海关编码</string>
     <string name="exit">退出</string>
     <string name="about">关于</string>
     <string name="groupmember">组成员</string>

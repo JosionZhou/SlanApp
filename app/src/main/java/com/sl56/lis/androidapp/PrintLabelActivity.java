@@ -34,6 +34,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
 public class PrintLabelActivity extends AppCompatActivity {
 
     private MaterialDialog dialog;
@@ -45,6 +51,7 @@ public class PrintLabelActivity extends AppCompatActivity {
     private Long lastPrintTime;
     //制单附件信息
     private HashMap<String,String> attachments = null;
+    private boolean isProgressDialogShowing =false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +102,49 @@ public class PrintLabelActivity extends AppCompatActivity {
                     .content("获取数据中...")
                     .progress(true,0)
                     .cancelable(false)
+                    .dismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            isProgressDialogShowing=false;
+                        }
+                    })
                     .show();
+            isProgressDialogShowing=true;
+            //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
+            Observable.create(new Observable.OnSubscribe<Boolean>() {
+                @Override
+                public void call(Subscriber<? super Boolean> subscriber) {
+                    try {
+                        Thread.sleep(10*1000);
+                        subscriber.onNext(isProgressDialogShowing);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Action1<Boolean>() {
+                @Override
+                public void call(final Boolean isShowing) {
+                    if(isShowing){
+                        VibratorHelper.shock(PrintLabelActivity.this);
+                        dialog.dismiss();
+                        dialog =  new MaterialDialog.Builder(PrintLabelActivity.this)
+                                .content("数据获取失败，是否重新获取？")
+                                .cancelable(false)
+                                .positiveText("是")
+                                .negativeText("否")
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        printLabelScan();
+                                    }
+                                })
+                                .show();
+                    }
+                }
+            });
             JSONObject params = new JSONObject();
             try {
                 params.put("referenceNumber",etReferenceNumber.getText().toString().trim());
@@ -148,6 +197,9 @@ public class PrintLabelActivity extends AppCompatActivity {
         //list.add(new AbstractMap.SimpleEntry("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"),result.getBoolean("IsRequeiredInvoice")));
         list.add(new AbstractMap.SimpleEntry("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"),result.getBoolean("IsCustomsDeclaration")));
         list.addAll(getAttachmentInfos());
+        String printTips = result.getString("PrintTips");
+        if(printTips.length()>0 && printTips!="null")
+            list.add(new AbstractMap.SimpleEntry("打印提示："+printTips,true));
         return list;
     }
     private ArrayList getAttachmentInfos() throws JSONException{

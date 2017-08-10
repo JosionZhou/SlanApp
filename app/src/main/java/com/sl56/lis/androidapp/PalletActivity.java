@@ -1,5 +1,6 @@
 package com.sl56.lis.androidapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -62,6 +63,7 @@ public class PalletActivity extends AppCompatActivity {
     private ListView lvShipments;
     private CheckBox cbCustoms;
     private CheckBox cbBattery;
+    private boolean isProgressDialogShowing=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -446,7 +448,49 @@ public class PalletActivity extends AppCompatActivity {
                 .progress(true,0)
                 .content("数据获取中...")
                 .cancelable(false)
+                .dismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        isProgressDialogShowing=false;
+                    }
+                })
                 .show();
+        isProgressDialogShowing=true;
+        //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
+        Observable.create(new Observable.OnSubscribe<Boolean>() {
+            @Override
+            public void call(Subscriber<? super Boolean> subscriber) {
+                try {
+                    Thread.sleep(10*1000);
+                    subscriber.onNext(isProgressDialogShowing);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        })
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Action1<Boolean>() {
+            @Override
+            public void call(final Boolean isShowing) {
+                if(isShowing){
+                    VibratorHelper.shock(PalletActivity.this);
+                    progressDialog.dismiss();
+                    progressDialog =  new MaterialDialog.Builder(PalletActivity.this)
+                            .content("数据获取失败，是否重新获取？")
+                            .cancelable(false)
+                            .positiveText("是")
+                            .negativeText("否")
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    pallet();
+                                }
+                            })
+                            .show();
+                }
+            }
+        });
         Observable.create(new Observable.OnSubscribe<JSONObject>() {
             @Override
             public void call(Subscriber<? super JSONObject> subscriber) {

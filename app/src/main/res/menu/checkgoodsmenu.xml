@@ -6,4 +6,9 @@
         android:orderInCategory="100"
         app:showAsAction="always"
         android:title="组成员"/>
+    <item
+        android:id="@+id/hscode"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:title="海关编码"/>
 </menu>
