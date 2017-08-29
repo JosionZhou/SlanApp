@@ -208,7 +208,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             jsonParams.put("receiveGoodsDetailId", receiveGoodsDetailId);
             jsonParams.put("rules",rules);
             jsonParams.put("problems",changeProblems);
-            jsonParams.put("remark",((ScrollViewFragment)mFragments.get(1)).getRemarkText()+"；"+((ScrollViewFragment)mFragments.get(2)).getRemarkText());
+            jsonParams.put("remark",((ScrollViewFragment)mFragments.get(3)).getRemarkText());
             jsonParams.put("header",Global.getHeader());
             //若是已查货，并且上一次查货存在电池数，在此次操作中没有直接保存的话，直接取上次查货的电池数
             //若此次查货讲电池数更改为0，则getCellQuantity()会得到0，而不是null
@@ -421,11 +421,13 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         priceRules = result.getJSONArray("PriceRules");
                         otherRules = result.getJSONArray("OhterRules");
                         problems = result.getJSONArray("Problems");
+                        JSONArray remark = new JSONArray();
+                        remark.put(result.getString("Remark"));
                         arrayList.clear();
                         arrayList.add(priceRules);//添加报价规则到第一个选项卡
                         arrayList.add(otherRules);//添加其他报价规则到第二个选项卡
                         arrayList.add(problems);//添加问题到第三个选项卡
-                        arrayList.add(null);//填写备注的选项卡为null
+                        arrayList.add(remark);//填写备注的选项卡显示已存在的备注内容
                         InspectionTips = result.getString("InspectionTips");
                         receiveGoodsDetailId = result.getInt("ReceiveGoodsDetailId");
                         cellQuantity = result.getInt("CellQuantity");

@@ -56,7 +56,12 @@ public class ScrollViewFragment extends Fragment {
             this.context=context;
             for (int i = 0; i < array.length(); i++) {
                 try {
-                    this.array.put(new JSONObject(array.getJSONObject(i).toString()));
+                    if(array.get(0) instanceof String) {
+                        this.array=null;
+                        remarkText = array.getString(0);
+                    }
+                    else
+                        this.array.put(new JSONObject(array.getJSONObject(i).toString()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -81,6 +86,7 @@ public class ScrollViewFragment extends Fragment {
         View view ;//根据传入的JsonArray生成复选框，若JsonArray为null则生成备注输入框
         if(array==null){
             view = inflater.inflate(R.layout.checkgoodsremark,null);
+            ((EditText)view).setText(remarkText);
             ((EditText)view).addTextChangedListener(new EditChangedListener());
         }else{
             view = inflater.inflate(R.layout.scroolviewmain,null);
