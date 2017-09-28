@@ -1,5 +1,6 @@
 package com.sl56.lis.androidapp;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
@@ -16,7 +17,8 @@ public class Global {
         return Header;
     }
 
-    public static void setHeader(JSONObject header) {
+    public static void setHeader(JSONObject header) throws JSONException {
+        header.put("Platform","Android");
         Header = header;
     }
 

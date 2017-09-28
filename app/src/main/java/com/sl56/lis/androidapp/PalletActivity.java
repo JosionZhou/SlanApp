@@ -326,7 +326,7 @@ public class PalletActivity extends AppCompatActivity {
 
         Cursor result = dbHelper.Fetch("StationId");
         if(result.getCount()>0)
-            dbHelper.Update(bindStationId.toString());
+            dbHelper.Update("StationId",bindStationId.toString());
         else
             dbHelper.Inert("StationId",bindStationId.toString());
     }

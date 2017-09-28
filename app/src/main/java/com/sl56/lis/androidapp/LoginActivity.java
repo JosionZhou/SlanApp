@@ -132,7 +132,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                         Date serverDate =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(serverPublishDate);
                         if(serverDate.getTime()>localDate.getTime()) {
                             isUpdate = true;
-                            db.Inert("PublishDate",serverPublishDate);
+                            db.Update("PublishDate",serverPublishDate);
                         }
                     }
                     if(isUpdate){

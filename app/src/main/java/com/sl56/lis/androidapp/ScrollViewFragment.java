@@ -130,10 +130,12 @@ public class ScrollViewFragment extends Fragment {
                                 else
                                     tagObj.put("IsChecked",checked);
                                 //若是选择了电池，则弹出电池数量输入框
-                                if((tagObj.getString("Name").contains("PI")||tagObj.getString("Name").contains("电池"))) {
+                                if((tagObj.getString("Description").contains("PI")||tagObj.getString("Description").contains("电池"))) {
                                     if(checked) {
                                         String prefill = cellQuantity == null ? "" : cellQuantity.toString();
-                                        int preSelectedIndex=-1;
+                                        //默认电池数大于2
+                                        int preSelectedIndex=0;
+                                        cellQuantity=5;
                                         if(cellQuantity!=null){
                                             if(cellQuantity>4)
                                                 preSelectedIndex=0;
@@ -164,7 +166,7 @@ public class ScrollViewFragment extends Fragment {
                                     }else cellQuantity=0;
                                 }
                                 //若是人工扣货
-                                else if((tagObj.getString("Name").contains("人工扣货"))){
+                                else if((tagObj.getString("Description").contains("人工扣货"))){
 //                                    if(checked) {
 //                                        new MaterialDialog.Builder(context)
 //                                                .title("请输入扣货备注")

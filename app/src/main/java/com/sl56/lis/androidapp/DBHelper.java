@@ -37,9 +37,8 @@ public class DBHelper extends SQLiteOpenHelper {
         cv.put("value",value);
         getWritableDatabase().insert("Meta",null,cv);
     }
-    public void Update(String value){
-        ContentValues cv = new ContentValues();
-        cv.put("value",value);
-        getWritableDatabase().update("Meta",cv,null,null);
+    public void Update(String key,String value){
+        String sql = "update Meta set value = '"+value+"' where key = '"+key+"'";
+        getWritableDatabase().execSQL(sql);
     }
 }

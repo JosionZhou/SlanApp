@@ -36,7 +36,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -66,6 +68,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private int piece;//件数
     private SetPriceNameHandler handler = new SetPriceNameHandler();
     private boolean isProgressDialogShowing =false;
+    private String lastChanged;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -210,6 +213,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             jsonParams.put("problems",changeProblems);
             jsonParams.put("remark",((ScrollViewFragment)mFragments.get(3)).getRemarkText());
             jsonParams.put("header",Global.getHeader());
+            jsonParams.put("lastChanged",lastChanged);
             //若是已查货，并且上一次查货存在电池数，在此次操作中没有直接保存的话，直接取上次查货的电池数
             //若此次查货讲电池数更改为0，则getCellQuantity()会得到0，而不是null
             if(isChecked && ((ScrollViewFragment) mFragments.get(0)).getCellQuantity()==null)
@@ -418,6 +422,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             alertMsg=result.getString("ErrorMessage");
                             return false;
                         }
+                        lastChanged = result.getString("LastChanged");
                         priceRules = result.getJSONArray("PriceRules");
                         otherRules = result.getJSONArray("OhterRules");
                         problems = result.getJSONArray("Problems");
@@ -451,7 +456,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         isProgressDialogShowing=false;
                         break;
                 }
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 alertMsg = e.getMessage();
                 return false;
             }
@@ -462,6 +467,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean isSuccess) {
             super.onPostExecute(isSuccess);
+            isProgressDialogShowing=false;
             etReferencenumber.selectAll();//全选输入框文本
             dialog.dismiss();//释放dialog
             MaterialDialog.Builder builder = new MaterialDialog.Builder(CheckGoodsActivity.this);
@@ -478,6 +484,8 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         builder.title("查货保存失败");
                         break;
                 }
+                if(status==-1)
+                    builder.title("报价已刷新");
                 builder.content(alertMsg);
                 builder.positiveText("确定");
                 builder.onPositive(new MaterialDialog.SingleButtonCallback() {
