@@ -158,6 +158,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
      */
     private void saveCheckGoods(){
         if(receiveGoodsDetailId ==0){
+            VibratorHelper.shock(CheckGoodsActivity.this);
             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                     .title("保存失败")
                     .content("请扫描单号成功后再保存")
@@ -499,7 +500,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             }else{
                 if(type==1){
                     Message msg = handler.obtainMessage();
-                    msg.arg1=1;
+                    msg.arg1=-1;
                     msg.arg2=piece;
                     msg.sendToTarget();
                     ViewPager vpMaind = (ViewPager) findViewById(R.id.vpMain);
@@ -576,6 +577,13 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 tvPriceName.setText(msg.obj.toString());
             tvCheckInfo.setText("共 "+msg.arg2+" 件； "+"是否查货："+(msg.arg1==0?"否":"是"));
             isChecked = !(msg.arg1==0);
+            //保存后清空单号信息
+            if(msg.arg1==-1){
+                tvPriceName.setText("");
+                tvCheckInfo.setText("");
+                etReferencenumber.setText("");
+                receiveGoodsDetailId=0;
+            }
         }
     }
 }
