@@ -39,9 +39,13 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Timer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -69,6 +73,9 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private SetPriceNameHandler handler = new SetPriceNameHandler();
     private boolean isProgressDialogShowing =false;
     private String lastChanged;
+    private int timer=0;//获取数据对话框显示10秒后提示获取失败
+    ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+    Subscriber<JSONObject> subscriber;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +90,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         tvCheckInfo = (TextView)findViewById(R.id.tv_checkinfo);
         etReferencenumber = (EditText) findViewById(R.id.etreferencenumber);
         //设置输入框弹出键盘默认为数字键盘
-        String digists = "0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String digists = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         etReferencenumber.setKeyListener(DigitsKeyListener.getInstance(digists));
         //监听键盘回车键事件
         etReferencenumber.setOnKeyListener(new View.OnKeyListener() {
@@ -185,21 +192,16 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             json = new JSONObject(tagObj.toString());
                             json.put("NewIsChecked",isCurrentCheck);
                             rules.put(json);
-                        break;
+                            break;
                         case 1:
                             json = new JSONObject(tagObj.toString());
                             json.put("NewIsChecked",isCurrentCheck);
                             rules.put(json);
                             break;
                         case 2:
-                            if (problems.getJSONObject(j).getBoolean("IsChecked") != isCurrentCheck) {
-                                json = new JSONObject(tagObj.toString());
-                                if (isCurrentCheck)
-                                    json.put("ChangeType", 0);
-                                else
-                                    json.put("ChangeType", 1);
-                                    changeProblems.put(json);
-                            }
+                            json = new JSONObject(tagObj.toString());
+                            json.put("NewIsChecked",isCurrentCheck);
+                            changeProblems.put(json);
                             break;
                     }
                 }catch (Exception ex){
@@ -207,7 +209,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 }
             }
         }
-        JSONObject jsonParams = new JSONObject();
+        final JSONObject jsonParams = new JSONObject();
         try {
             jsonParams.put("receiveGoodsDetailId", receiveGoodsDetailId);
             jsonParams.put("rules",rules);
@@ -215,25 +217,95 @@ public class CheckGoodsActivity extends AppCompatActivity {
             jsonParams.put("remark",((ScrollViewFragment)mFragments.get(3)).getRemarkText());
             jsonParams.put("header",Global.getHeader());
             jsonParams.put("lastChanged",lastChanged);
-            //若是已查货，并且上一次查货存在电池数，在此次操作中没有直接保存的话，直接取上次查货的电池数
-            //若此次查货讲电池数更改为0，则getCellQuantity()会得到0，而不是null
-            if(isChecked && ((ScrollViewFragment) mFragments.get(0)).getCellQuantity()==null)
-                jsonParams.put("cellQuantity",cellQuantity);
-            else
-                jsonParams.put("cellQuantity",((ScrollViewFragment) mFragments.get(0)).getCellQuantity());
+            //把第一个选项卡和第二个选项卡的电池数相加
+            int currentCellQuantity=(((ScrollViewFragment) mFragments.get(0)).getCellQuantity()+((ScrollViewFragment) mFragments.get(1)).getCellQuantity());
+            jsonParams.put("cellQuantity",currentCellQuantity);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
                 .content("正在保存数据...")
                 .progress(true,0)
+                .dismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        isProgressDialogShowing=false;
+                        timer=0;
+                        subscriber.unsubscribe();
+                    }
+                })
                 .show();
+
+        //查货保存网络访问(RXJava方式)
+        Observable exeObj = Observable.create(new Observable.OnSubscribe<JSONObject>() {
+            @Override
+            public void call(Subscriber<? super JSONObject> subscriber) {
+                JSONObject result = HttpHelper.getJSONObjectFromUrl("InspectionSave",jsonParams);
+                subscriber.onNext(result);
+            }
+        });
+        subscriber = new Subscriber<JSONObject>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                VibratorHelper.shock(CheckGoodsActivity.this);
+                new MaterialDialog.Builder(CheckGoodsActivity.this)
+                        .title("保存操作失败")
+                        .content(e.getMessage())
+                        .positiveText("确定")
+                        .show();
+            }
+
+            @Override
+            public void onNext(JSONObject result) {
+                try {
+                    dialog.dismiss();
+                    int code = result.getInt("Result");
+                    if(code==0) {
+                        throw new Exception(result.getString("ErrorMessage"));
+                    }
+                    else if(code==-1){
+                        throw new Exception(result.getString("ErrorMessage")+".系统已刷新内价");
+                    }
+                    isProgressDialogShowing=false;
+                    timer=0;
+                    Message msg = handler.obtainMessage();
+                    msg.arg1=-1;
+                    msg.arg2=piece;
+                    msg.sendToTarget();
+                    ViewPager vpMaind = (ViewPager) findViewById(R.id.vpMain);
+                    //保存查货后隐藏选项卡，避免误操作
+                    vpMaind.setVisibility(View.GONE);
+                }catch (Exception e){
+                    VibratorHelper.shock(CheckGoodsActivity.this);
+                    new MaterialDialog.Builder(CheckGoodsActivity.this)
+                            .title("提示")
+                            .content(e.getMessage())
+                            .positiveText("确定")
+                            .show();
+                }
+            }
+        };
+        exeObj.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+
+
+
         isProgressDialogShowing=true;
+        timer=0;
         Observable.create(new Observable.OnSubscribe<Boolean>() {
             @Override
             public void call(Subscriber<? super Boolean> subscriber) {
                 try {
-                    Thread.sleep(10*1000);
+                    while(timer<10) {
+                        Thread.sleep(1 * 1000);
+                        timer++;
+                    }
                     subscriber.onNext(isProgressDialogShowing);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -257,14 +329,16 @@ public class CheckGoodsActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                             saveCheckGoods();
+                                            task.cancel(true);
                                         }
                                     })
                                     .show();
                         }
                     }
                 });
-        task = new CheckGoodsTask("InspectionSave",jsonParams,1);
-        task.execute();
+
+//        task = new CheckGoodsTask("InspectionSave",jsonParams,1);
+//        task.executeOnExecutor(cachedThreadPool);
     }
 
     /**
@@ -280,7 +354,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     .show();
             VibratorHelper.shock(this);
         }else{
-            JSONObject params = new JSONObject();
+            final JSONObject params = new JSONObject();
             try {
                 params.put("referenceNumber",referenceNumber);
                 params.put("header",Global.getHeader());
@@ -290,20 +364,27 @@ public class CheckGoodsActivity extends AppCompatActivity {
             dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
                     .content("正在获取数据...")
                     .progress(true,0)
+                    .cancelable(true)
                     .dismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
                             isProgressDialogShowing=false;
+                            timer=0;
+                            subscriber.unsubscribe();
                         }
                     })
                     .show();
             isProgressDialogShowing=true;
+            timer=0;
             //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
             Observable.create(new Observable.OnSubscribe<Boolean>() {
                 @Override
                 public void call(Subscriber<? super Boolean> subscriber) {
                     try {
-                        Thread.sleep(10*1000);
+                        while(timer<10) {
+                            Thread.sleep(1 * 1000);
+                            timer++;
+                        }
                         subscriber.onNext(isProgressDialogShowing);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -316,6 +397,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 @Override
                 public void call(final Boolean isShowing) {
                     if(isShowing){
+                        subscriber.unsubscribe();//超时则自动取消线程操作
                         VibratorHelper.shock(CheckGoodsActivity.this);
                         dialog.dismiss();
                         dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
@@ -326,6 +408,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                                     @Override
                                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                                        task.cancel(true);//把当前还在继续获取数据的task关闭
                                         checkGoodsScan();
                                     }
                                 })
@@ -333,8 +416,91 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     }
                 }
             });
-            task=new CheckGoodsTask("InspectionScan",params,0);
-            task.execute();
+
+            //查货扫描网络访问(RXJava方式)
+            Observable exeObj = Observable.create(new Observable.OnSubscribe<JSONObject>() {
+                @Override
+                public void call(Subscriber<? super JSONObject> subscriber) {
+                    JSONObject result = HttpHelper.getJSONObjectFromUrl("InspectionScan",params);
+                    if(result==null){
+                        subscriber.onError(new Exception("网络访问异常"));
+                    }
+                    subscriber.onNext(result);
+                }
+            });
+            subscriber = new Subscriber<JSONObject>() {
+                @Override
+                public void onCompleted() {
+
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    dialog.dismiss();
+                    new MaterialDialog.Builder(CheckGoodsActivity.this)
+                            .title("查货扫描失败")
+                            .content(e.getMessage())
+                            .positiveText("确定")
+                            .show();
+                }
+
+                @Override
+                public void onNext(JSONObject result) {
+                    dialog.dismiss();
+                    try {
+                        Boolean isSuccess = result.getBoolean("Success");
+                        if (!isSuccess) {
+                            String alertMsg = result.getString("ErrorMessage");
+                            throw new Exception(alertMsg);
+                        }
+                        lastChanged = result.getString("LastChanged");
+                        priceRules = result.getJSONArray("PriceRules");
+                        otherRules = result.getJSONArray("OhterRules");
+                        problems = result.getJSONArray("Problems");
+                        JSONArray remark = new JSONArray();
+                        remark.put(result.getString("Remark"));
+                        arrayList.clear();
+                        arrayList.add(priceRules);//添加报价规则到第一个选项卡
+                        arrayList.add(otherRules);//添加其他报价规则到第二个选项卡
+                        arrayList.add(problems);//添加问题到第三个选项卡
+                        arrayList.add(remark);//填写备注的选项卡显示已存在的备注内容
+                        InspectionTips = result.getString("InspectionTips");
+                        receiveGoodsDetailId = result.getInt("ReceiveGoodsDetailId");
+                        cellQuantity = result.getInt("CellQuantity");
+                        piece = result.getInt("Piece");
+                        Message msg = handler.obtainMessage();
+                        msg.obj = result.getString("PriceName");
+                        msg.arg1 = result.getBoolean("IsInspection") ? 1 : 0;
+                        msg.arg2 = piece;
+                        msg.sendToTarget();
+                        setTabAdapter(0);
+                        isProgressDialogShowing=false;
+                        etReferencenumber.selectAll();//全选输入框文本
+                        ViewPager vpMaind = (ViewPager) findViewById(R.id.vpMain);
+                        //查货扫描时显示选项卡
+                        vpMaind.setVisibility(View.VISIBLE);
+                        if (!InspectionTips.isEmpty()) {
+                            dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
+                                    .title("查货提示")
+                                    .content(InspectionTips)
+                                    .positiveText("确定")
+                                    .show();
+                            VibratorHelper.shock(CheckGoodsActivity.this);
+                        }
+                    }catch (Exception e){
+                        new MaterialDialog.Builder(CheckGoodsActivity.this)
+                                .title("查货扫描失败")
+                                .content(e.getMessage())
+                                .positiveText("确定")
+                                .show();
+                    }
+                }
+            };
+            exeObj.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(subscriber);
+//            task=new CheckGoodsTask("InspectionScan",params,0);
+//            task.executeOnExecutor(cachedThreadPool);
         }
     }
 
@@ -348,7 +514,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         if(type==0) {//若是查货扫描，则重新生成CheckBox
             ArrayList<Fragment> newFragments = new ArrayList<>();
             for (JSONArray ja : arrayList) {
-                newFragments.add(new ScrollViewFragment(ja, arrayList.indexOf(ja), receiveGoodsDetailId,CheckGoodsActivity.this));
+                newFragments.add(new ScrollViewFragment(ja, arrayList.indexOf(ja), receiveGoodsDetailId,cellQuantity,CheckGoodsActivity.this));
             }
             mpa.setFragments(newFragments);
             mFragments.clear();
@@ -455,6 +621,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             return false;
                         }
                         isProgressDialogShowing=false;
+                        timer=0;
                         break;
                 }
             } catch (Exception e) {
@@ -469,6 +636,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         protected void onPostExecute(Boolean isSuccess) {
             super.onPostExecute(isSuccess);
             isProgressDialogShowing=false;
+            timer=0;
             etReferencenumber.selectAll();//全选输入框文本
             dialog.dismiss();//释放dialog
             MaterialDialog.Builder builder = new MaterialDialog.Builder(CheckGoodsActivity.this);

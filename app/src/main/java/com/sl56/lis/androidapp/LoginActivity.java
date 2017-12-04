@@ -1,6 +1,7 @@
 package com.sl56.lis.androidapp;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -25,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
@@ -73,6 +76,21 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
+        if(!NetWorkUitls.isNetworkConnected(LoginActivity.this)){
+            pDialog=new MaterialDialog.Builder(this)
+                    .content("当前网络不可用")
+                    .title("警告")
+                    .positiveText("确定")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            System.exit(0);
+                        }
+                    })
+                    .show();
+            return;
+        }
+
         pDialog = new MaterialDialog.Builder(this)
                 .content("正在检测版本")
                 .progress(true,0)
@@ -84,7 +102,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 try {
                     subscriber.onNext(HttpHelper.getVersion());
                 } catch (Exception e) {
-                    subscriber.onError(e);
+                    //subscriber.onError(e);
+                    new MaterialDialog.Builder(LoginActivity.this)
+                            .title("提示")
+                            .content("获取最新版本失败，当前将忽略获取最新版本，将会在重启时重新获取")
+                            .positiveText("确定")
+                            .show();
                 }
             }
         })

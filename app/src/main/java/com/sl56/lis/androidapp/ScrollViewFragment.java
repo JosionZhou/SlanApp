@@ -33,13 +33,15 @@ import java.util.regex.Pattern;
  */
 
 public class ScrollViewFragment extends Fragment {
-
-    private Integer cellQuantity;//电池个数
+    private Integer cellQuantity=0;//电池个数
+    private Integer initCellQuantity=0;//初始化时电池个数
     private JSONArray array;
     private String remarkText="";
     private int fragmentIndex;
     private Context context;
     private Boolean isRulesChanged;
+    private int batteryTypes=0;//电池类别数量
+    private Boolean isInit=true;
 
     /**
      *
@@ -48,11 +50,12 @@ public class ScrollViewFragment extends Fragment {
      * @param receiveGoodsDetailId 收货明细id
      * @param context
      */
-    public ScrollViewFragment(JSONArray array,int fragmentIndex,int receiveGoodsDetailId,Context context){
+    public ScrollViewFragment(JSONArray array,int fragmentIndex,int receiveGoodsDetailId,int initCellQuantity,Context context){
         if(array!=null) {
             isRulesChanged=false;
             this.fragmentIndex= fragmentIndex;
             this.array = new JSONArray();
+            this.initCellQuantity=initCellQuantity;
             this.context=context;
             for (int i = 0; i < array.length(); i++) {
                 try {
@@ -100,7 +103,7 @@ public class ScrollViewFragment extends Fragment {
                     }catch(JSONException ex){
                         text=array.getJSONObject(i).getString("Name");
                     }
-                    Boolean isChecked;
+                    Boolean isChecked=false;
                     if(!array.getJSONObject(i).isNull("OldIsChecked")) {
                         isChecked = array.getJSONObject(i).getBoolean("OldIsChecked");
                         //初始化时，NewIsChecked等于OldIsChecked
@@ -109,12 +112,12 @@ public class ScrollViewFragment extends Fragment {
                         else
                             isChecked = array.getJSONObject(i).getBoolean("NewIsChecked");
                     }
-                    else
-                        isChecked = array.getJSONObject(i).getBoolean("IsChecked");
                     v.setText(text);
                     v.setChecked(isChecked);
-                    if(isChecked && fragmentIndex==2)//问题移除功能未做好，若wcf端已完善移除问题的功能，则去除此代码即可
-                            v.setEnabled(false);//已保存的问题项，暂不允许移除
+                    if(isChecked&&(text.contains("PI")||text.contains("电池"))&&isInit) {
+                        cellQuantity = initCellQuantity;//初始化时加载电池数量到有勾选电池项的选项卡
+                        batteryTypes=1;
+                    }
                     v.setTag(array.getJSONObject(i));
                     //为复选框绑定事件
                     v.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
@@ -130,9 +133,9 @@ public class ScrollViewFragment extends Fragment {
                                 else
                                     tagObj.put("IsChecked",checked);
                                 //若是选择了电池，则弹出电池数量输入框
-                                if((tagObj.getString("Description").contains("PI")||tagObj.getString("Description").contains("电池"))) {
+                                if(!tagObj.isNull("Description") && (tagObj.getString("Description").contains("PI")||tagObj.getString("Description").contains("电池"))) {
                                     if(checked) {
-                                        String prefill = cellQuantity == null ? "" : cellQuantity.toString();
+                                        batteryTypes++;
                                         //默认电池数大于2
                                         int preSelectedIndex=0;
                                         cellQuantity=5;
@@ -163,10 +166,14 @@ public class ScrollViewFragment extends Fragment {
                                                 })
                                                 .positiveText("确定")
                                                 .show();
-                                    }else cellQuantity=0;
+                                    }else {
+                                        batteryTypes--;
+                                        if(batteryTypes==0)
+                                            cellQuantity = 0;
+                                    }
                                 }
                                 //若是人工扣货
-                                else if((tagObj.getString("Description").contains("人工扣货"))){
+                                else if(!tagObj.isNull("Description") && (tagObj.getString("Description").contains("人工扣货"))){
 //                                    if(checked) {
 //                                        new MaterialDialog.Builder(context)
 //                                                .title("请输入扣货备注")
@@ -204,7 +211,7 @@ public class ScrollViewFragment extends Fragment {
                     while (m.find()) {
                         count ++;
                     }
-                    int width = (40-(text.length()-1)*2)*count+(text.length()-count)*20;
+                    int width = (55-(text.length()-1)*2)*count+(text.length()-count)*20;
                     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width,50);
                     v.setLayoutParams(params);
                 }catch(Exception e){
@@ -214,6 +221,7 @@ public class ScrollViewFragment extends Fragment {
                 parentLL.addView(v);
             }
         }
+        isInit=false;
         return view;
     }
     public JSONArray getCheckboxSourceArray(){

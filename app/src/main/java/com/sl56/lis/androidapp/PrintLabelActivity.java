@@ -147,6 +147,7 @@ public class PrintLabelActivity extends AppCompatActivity {
             });
             JSONObject params = new JSONObject();
             try {
+                dialog.dismiss();
                 params.put("referenceNumber",etReferenceNumber.getText().toString().trim());
                 params.put("header",Global.getHeader());
                 PrintLabelTask task = new PrintLabelTask(params,"PrintLabelScan");
