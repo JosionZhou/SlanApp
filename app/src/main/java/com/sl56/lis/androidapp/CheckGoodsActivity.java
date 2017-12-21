@@ -71,11 +71,9 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private Boolean isChecked;//是否已经查货
     private int piece;//件数
     private SetPriceNameHandler handler = new SetPriceNameHandler();
-    private boolean isProgressDialogShowing =false;
     private String lastChanged;
-    private int timer=0;//获取数据对话框显示10秒后提示获取失败
-    ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
     Subscriber<JSONObject> subscriber;
+    Subscriber<Boolean> subscriberFailDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -226,12 +224,11 @@ public class CheckGoodsActivity extends AppCompatActivity {
         dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
                 .content("正在保存数据...")
                 .progress(true,0)
-                .dismissListener(new DialogInterface.OnDismissListener() {
+                .dismissListener(new DialogInterface.OnDismissListener() {//此对话框消失时
                     @Override
                     public void onDismiss(DialogInterface dialog) {
-                        isProgressDialogShowing=false;
-                        timer=0;
-                        subscriber.unsubscribe();
+                        subscriber.unsubscribe();//取消订阅查货保存事件
+                        subscriberFailDialog.unsubscribe();//取消订阅保存超时处理事件
                     }
                 })
                 .show();
@@ -262,17 +259,16 @@ public class CheckGoodsActivity extends AppCompatActivity {
 
             @Override
             public void onNext(JSONObject result) {
+                int code=0;
                 try {
                     dialog.dismiss();
-                    int code = result.getInt("Result");
+                    code = result.getInt("Result");
                     if(code==0) {
                         throw new Exception(result.getString("ErrorMessage"));
                     }
                     else if(code==-1){
                         throw new Exception(result.getString("ErrorMessage")+".系统已刷新内价");
                     }
-                    isProgressDialogShowing=false;
-                    timer=0;
                     Message msg = handler.obtainMessage();
                     msg.arg1=-1;
                     msg.arg2=piece;
@@ -286,6 +282,15 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             .title("提示")
                             .content(e.getMessage())
                             .positiveText("确定")
+                            .cancelable(false)
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    if(dialog.getContentView().getText().toString().contains("刷新内价")){
+                                        checkGoodsScan();
+                                    }
+                                }
+                            })
                             .show();
                 }
             }
@@ -293,20 +298,44 @@ public class CheckGoodsActivity extends AppCompatActivity {
         exeObj.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(subscriber);
+        subscriberFailDialog = new Subscriber<Boolean>(){
 
+            @Override
+            public void onCompleted() {
 
+            }
 
-        isProgressDialogShowing=true;
-        timer=0;
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(Boolean isShowing) {
+                if(isShowing){
+                    VibratorHelper.shock(CheckGoodsActivity.this);
+                    dialog.dismiss();
+                    dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
+                            .content("操作失败，是否重新获取数据？")
+                            .cancelable(false)
+                            .positiveText("是")
+                            .negativeText("否")
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    saveCheckGoods();
+                                }
+                            })
+                            .show();
+                }
+            }
+        };
         Observable.create(new Observable.OnSubscribe<Boolean>() {
             @Override
             public void call(Subscriber<? super Boolean> subscriber) {
                 try {
-                    while(timer<10) {
-                        Thread.sleep(1 * 1000);
-                        timer++;
-                    }
-                    subscriber.onNext(isProgressDialogShowing);
+                    Thread.sleep(10*1000);//休眠10秒
+                    subscriber.onNext(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -314,28 +343,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Boolean>() {
-                    @Override
-                    public void call(final Boolean isShowing) {
-                        if(isShowing){
-                            VibratorHelper.shock(CheckGoodsActivity.this);
-                            dialog.dismiss();
-                            dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
-                                    .content("操作失败，是否重新获取数据？")
-                                    .cancelable(false)
-                                    .positiveText("是")
-                                    .negativeText("否")
-                                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                        @Override
-                                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                            saveCheckGoods();
-                                            task.cancel(true);
-                                        }
-                                    })
-                                    .show();
-                        }
-                    }
-                });
+                .subscribe(subscriberFailDialog);
 
 //        task = new CheckGoodsTask("InspectionSave",jsonParams,1);
 //        task.executeOnExecutor(cachedThreadPool);
@@ -345,6 +353,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
      * 查货扫描
      */
     private void checkGoodsScan() {
+        etReferencenumber.selectAll();
         String referenceNumber = ((EditText) findViewById(R.id.etreferencenumber)).getText().toString();
         if(referenceNumber.trim().isEmpty()) {
             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
@@ -368,24 +377,47 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     .dismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            isProgressDialogShowing=false;
-                            timer=0;
                             subscriber.unsubscribe();
+                            subscriberFailDialog.unsubscribe();
                         }
                     })
                     .show();
-            isProgressDialogShowing=true;
-            timer=0;
+            subscriberFailDialog = new Subscriber<Boolean>() {
+                @Override
+                public void onCompleted() {
+
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onNext(Boolean aBoolean) {
+                    VibratorHelper.shock(CheckGoodsActivity.this);
+                    dialog.dismiss();
+                    dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
+                            .content("数据获取失败，是否重新获取？")
+                            .cancelable(false)
+                            .positiveText("是")
+                            .negativeText("否")
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    checkGoodsScan();
+                                }
+                            })
+                            .show();
+                }
+            };
             //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
             Observable.create(new Observable.OnSubscribe<Boolean>() {
                 @Override
                 public void call(Subscriber<? super Boolean> subscriber) {
                     try {
-                        while(timer<10) {
-                            Thread.sleep(1 * 1000);
-                            timer++;
-                        }
-                        subscriber.onNext(isProgressDialogShowing);
+                        Thread.sleep(1 * 1000);
+                        subscriber.onNext(true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -393,29 +425,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Action1<Boolean>() {
-                @Override
-                public void call(final Boolean isShowing) {
-                    if(isShowing){
-                        subscriber.unsubscribe();//超时则自动取消线程操作
-                        VibratorHelper.shock(CheckGoodsActivity.this);
-                        dialog.dismiss();
-                        dialog =  new MaterialDialog.Builder(CheckGoodsActivity.this)
-                                .content("数据获取失败，是否重新获取？")
-                                .cancelable(false)
-                                .positiveText("是")
-                                .negativeText("否")
-                                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                    @Override
-                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                                        task.cancel(true);//把当前还在继续获取数据的task关闭
-                                        checkGoodsScan();
-                                    }
-                                })
-                                .show();
-                    }
-                }
-            });
+            .subscribe();
 
             //查货扫描网络访问(RXJava方式)
             Observable exeObj = Observable.create(new Observable.OnSubscribe<JSONObject>() {
@@ -474,7 +484,6 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         msg.arg2 = piece;
                         msg.sendToTarget();
                         setTabAdapter(0);
-                        isProgressDialogShowing=false;
                         etReferencenumber.selectAll();//全选输入框文本
                         ViewPager vpMaind = (ViewPager) findViewById(R.id.vpMain);
                         //查货扫描时显示选项卡
@@ -620,8 +629,6 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             alertMsg=result.getString("ErrorMessage")+".系统已刷新内价";
                             return false;
                         }
-                        isProgressDialogShowing=false;
-                        timer=0;
                         break;
                 }
             } catch (Exception e) {
@@ -635,8 +642,6 @@ public class CheckGoodsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean isSuccess) {
             super.onPostExecute(isSuccess);
-            isProgressDialogShowing=false;
-            timer=0;
             etReferencenumber.selectAll();//全选输入框文本
             dialog.dismiss();//释放dialog
             MaterialDialog.Builder builder = new MaterialDialog.Builder(CheckGoodsActivity.this);
