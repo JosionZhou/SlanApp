@@ -31,6 +31,8 @@ import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -241,7 +243,7 @@ public class PalletActivity extends AppCompatActivity {
                 JSONObject params = new JSONObject();
                 try {
                     params.put("header", Global.getHeader());
-                    params.put("parentId", 4);
+                    params.put("parentId", 59);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
@@ -271,6 +273,14 @@ public class PalletActivity extends AppCompatActivity {
                     View view = getLayoutInflater().inflate(R.layout.settingstationbinds,null);
                     MaterialSpinner spinner = (MaterialSpinner)view.findViewById(R.id.stationSpinner);
                     spinner.setItems(bindingStationList.keySet().toArray());
+                    if(bindStationId!=null) {
+                        Integer[] ids = bindingStationList.values().toArray(new Integer[0]);
+                        for(int i=0;i<ids.length;i++)
+                        {
+                            if(ids[i]==bindStationId)
+                                spinner.setSelectedIndex(i);
+                        }
+                    }
                     spinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {

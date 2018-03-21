@@ -2,6 +2,7 @@ package com.sl56.lis.androidapp;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -17,6 +18,7 @@ import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -67,6 +69,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private String errorMsg;
     private Integer companyId;
     private Integer siteId;
+    private String deviceId;
     private String downloadFileName;
     private List<Map.Entry<String,Integer>> companyList;
     private List<Map.Entry<String,Integer>> sites;
@@ -76,6 +79,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
+        TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        TextView tv = (TextView) this.findViewById(R.id.device_id);
+        deviceId=tm.getDeviceId();
+        tv.setText("设备ID：" + deviceId);
         if(!NetWorkUitls.isNetworkConnected(LoginActivity.this)){
             pDialog=new MaterialDialog.Builder(this)
                     .content("当前网络不可用")
@@ -528,6 +535,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 para.put("password", mPassword);
                 para.put("companyId", companyId);
                 para.put("siteId",siteId);
+                para.put("deviceId",deviceId);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -542,8 +550,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     errorMsg = "用户名或密码不正确";
                     return false;
                 }
-                if(array.get(0)=="Error") {
-                    errorMsg=response.getString("Error");
+                if(array.get(0).equals("Error")) {
+                    errorMsg=response.getString("Error")+"\r\n"+"检查是否加入设备管理";
                     return false;
                 }
                 else Global.setHeader(response);

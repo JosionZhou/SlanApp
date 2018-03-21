@@ -6,20 +6,21 @@
     android:background="@color/silver"
     android:orientation="vertical">
 
-    <com.jaredrummler.materialspinner.MaterialSpinner
-        android:id="@+id/stationSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textSize="20dip"/>
 
     <TextView
         android:id="@+id/tv_bindingremark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/checkgoods_referencenumber"
         android:layout_marginTop="2dp"
+        android:background="@drawable/checkgoods_referencenumber"
         android:padding="8dp"
+        android:textSize="17dip" />
+
+    <com.jaredrummler.materialspinner.MaterialSpinner
+        android:id="@+id/stationSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
         android:textSize="20dip"/>
 
 </LinearLayout>
