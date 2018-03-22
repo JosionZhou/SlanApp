@@ -550,8 +550,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     errorMsg = "用户名或密码不正确";
                     return false;
                 }
+                if(response.getString("ErrorMsg").length()>0 && !response.getString("ErrorMsg").equals("null")){
+                    errorMsg=response.getString("ErrorMsg");
+                    return false;
+                }
                 if(array.get(0).equals("Error")) {
-                    errorMsg=response.getString("Error")+"\r\n"+"检查是否加入设备管理";
+                    errorMsg=response.getString("Error");
                     return false;
                 }
                 else Global.setHeader(response);
