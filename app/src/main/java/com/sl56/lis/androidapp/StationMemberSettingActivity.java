@@ -234,7 +234,6 @@ public class StationMemberSettingActivity extends AppCompatActivity {
             public void call(JSONObject jsonObject) {
                 try {
                     stationList=jsonObject.getJSONArray("PostGroupms");
-                    int selectedIndex=0;
                     ArrayList<String> data = new ArrayList<String>();
                     for(int i=0;i<stationList.length();i++) {
                         JSONObject obj =  stationList.getJSONObject(i);
