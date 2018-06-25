@@ -158,7 +158,7 @@ public class ScrollViewFragment extends Fragment {
                                                                 cellQuantity=5;
                                                                 break;
                                                             case 1:
-                                                                cellQuantity=2;
+                                                                cellQuantity=4;
                                                                 break;
                                                         }
                                                         return true;

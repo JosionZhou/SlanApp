@@ -216,6 +216,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             jsonParams.put("header",Global.getHeader());
             jsonParams.put("lastChanged",lastChanged);
             //把第一个选项卡和第二个选项卡的电池数相加
+            //为了防止出现勾选了电池型号，但是电池数为0的问题（之前逻辑是取消勾选后将电池数直接设置为0，但是如果存在勾选了多个电池型号的情况下，将会出现勾选了电池型号，而电池数为0）
             int currentCellQuantity=(((ScrollViewFragment) mFragments.get(0)).getCellQuantity()+((ScrollViewFragment) mFragments.get(1)).getCellQuantity());
             jsonParams.put("cellQuantity",currentCellQuantity);
         } catch (JSONException e) {

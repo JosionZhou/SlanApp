@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"
@@ -59,7 +59,12 @@
         <activity
             android:name=".HSCodeListActivity"
             android:label="@string/text_slan_activity_hscode" />
-        <activity android:name=".AddHSCodeActivity" android:label="@string/text_add_hscode"></activity>
+        <activity
+            android:name=".AddHSCodeActivity"
+            android:label="@string/text_add_hscode" />
+        <activity
+            android:name=".ArchiveScanActivity"
+            android:label="@string/text_slan_action_archivescan"/>
     </application>
 
 </manifest>

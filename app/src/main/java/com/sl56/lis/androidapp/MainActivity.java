@@ -60,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
                     case 3:
                         it = new Intent(MainActivity.this,ClearanceActivity.class);
                         break;
+                    case 4:
+                        it= new Intent(MainActivity.this,ArchiveScanActivity.class);
+                        break;
                     default:return;
                 }
                 if(it!=null)
@@ -143,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
         rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
         rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);
         leftBmb.setButtonEnum(ButtonEnum.Ham);
-        leftBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
-        leftBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);
+        leftBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_5);
+        leftBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_5);
         for (int i = 0; i < leftBmb.getPiecePlaceEnum().pieceNumber(); i++){
             HamButton.Builder builder = BuilderManager.getSlanHamButtonBuilder();
             leftBmb.addBuilder(builder);

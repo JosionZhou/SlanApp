@@ -68,6 +68,11 @@ public class ClearanceActivity extends AppCompatActivity {
      * 清仓
      */
     private void Clearance(){
+        final String refNumber = etReferenceNumber.getText().toString();
+        if(refNumber.isEmpty()){
+            showDialog("提示","单号不能为空");
+            return;
+        }
         pDialog = new MaterialDialog.Builder(this)
                 .content("数据同步中...")
                 .cancelable(false)
@@ -78,7 +83,7 @@ public class ClearanceActivity extends AppCompatActivity {
             public void call(Subscriber<? super JSONObject> subscriber) {
                 JSONObject params = new JSONObject();
                 try {
-                    params.put("referenceNumber",etReferenceNumber.getText().toString());
+                    params.put("referenceNumber",refNumber);
                     params.put("header",Global.getHeader());
                 } catch (JSONException e) {
                     e.printStackTrace();

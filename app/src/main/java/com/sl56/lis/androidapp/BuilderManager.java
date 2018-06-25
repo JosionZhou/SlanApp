@@ -18,6 +18,7 @@ public class BuilderManager {
             R.drawable.qingcang,
             R.drawable.sitescan,
             R.drawable.sitescan,
+            R.drawable.sitescan,
             R.drawable.about,
             R.drawable.exit
     };
@@ -26,6 +27,7 @@ public class BuilderManager {
             R.string.text_slan_action_printlabel,
             R.string.text_slan_action_pallet,
             R.string.text_slan_action_qingcang,
+            R.string.text_slan_action_archivescan,
             R.string.text_slan_action_tosite,
             R.string.text_slan_action_fromsite,
             R.string.groupmember,
@@ -36,6 +38,7 @@ public class BuilderManager {
             R.string.text_slan_action_dayin_sub,
             R.string.text_slan_action_daban_sub,
             R.string.text_slan_action_qingcang_sub,
+            R.string.text_slan_action_archivescan,
             R.string.text_slan_action_tosite_sub,
             R.string.text_slan_action_fromsite_sub,
             R.string.groupmember_sub,
@@ -46,6 +49,7 @@ public class BuilderManager {
             R.color.limegreen,
             R.color.daban,
             R.color.teal,
+            R.color.lightseagreen,
             R.color.indianred,
             R.color.mediumaquamarine,
             R.color.lightseagreen,
