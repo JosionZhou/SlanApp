@@ -82,8 +82,7 @@
                 android:imeOptions="actionNext"
                 android:lines="1"
                 android:nextFocusForward="@+id/password"
-                android:drawableLeft="@drawable/user"
-                android:text="szsl028"/>
+                android:drawableLeft="@drawable/user"/>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -107,8 +106,7 @@
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
                 android:imeActionId="@+id/login"
-                android:drawableLeft="@drawable/password"
-                android:text="JOSION1020"/>
+                android:drawableLeft="@drawable/password"/>
 
 
             <Button
