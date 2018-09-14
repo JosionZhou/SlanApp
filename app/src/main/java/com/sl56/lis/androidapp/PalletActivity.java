@@ -243,7 +243,7 @@ public class PalletActivity extends AppCompatActivity {
                 JSONObject params = new JSONObject();
                 try {
                     params.put("header", Global.getHeader());
-                    params.put("parentId", 59);
+                    params.put("parentId", null);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
