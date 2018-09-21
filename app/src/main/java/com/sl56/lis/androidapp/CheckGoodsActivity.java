@@ -174,36 +174,53 @@ public class CheckGoodsActivity extends AppCompatActivity {
         JSONArray rules = new JSONArray();
         JSONArray changeProblems = new JSONArray();
         for(int i=0;i<3;i++) {
-            int checkBoxCount =((ScrollViewFragment) mFragments.get(i)).getCheckboxSourceArray().length();
-            for(int j=0;j<checkBoxCount;j++){
-                try {
-                    JSONObject tagObj = ((ScrollViewFragment) mFragments.get(i)).getCheckboxSourceArray().getJSONObject(j);
-                    Boolean isCurrentCheck;
-                    if(tagObj.isNull("IsChecked"))
-                        isCurrentCheck= tagObj.getBoolean("NewIsChecked");
-                    else
-                        isCurrentCheck= tagObj.getBoolean("IsChecked");
-                    //判断保存时复选框的状态和加载时是否一样
-                    JSONObject json =null;
-                    switch(i) {
-                        case 0:
-                            json = new JSONObject(tagObj.toString());
-                            json.put("NewIsChecked",isCurrentCheck);
-                            rules.put(json);
-                            break;
-                        case 1:
-                            json = new JSONObject(tagObj.toString());
-                            json.put("NewIsChecked",isCurrentCheck);
-                            rules.put(json);
-                            break;
-                        case 2:
-                            json = new JSONObject(tagObj.toString());
-                            json.put("NewIsChecked",isCurrentCheck);
-                            changeProblems.put(json);
-                            break;
+            ScrollViewFragment svf = (ScrollViewFragment) mFragments.get(i);
+            //判断对应的选项卡是否被创建，没有创建的选项卡代表数据没有更改
+            if(svf.getIsCreated()) {
+                int checkBoxCount = svf.getCheckboxSourceArray().length();
+                for (int j = 0; j < checkBoxCount; j++) {
+                    try {
+                        JSONObject tagObj = ((ScrollViewFragment) mFragments.get(i)).getCheckboxSourceArray().getJSONObject(j);
+                        Boolean isCurrentCheck;
+                        if (tagObj.isNull("IsChecked"))
+                            isCurrentCheck = tagObj.getBoolean("NewIsChecked");
+                        else
+                            isCurrentCheck = tagObj.getBoolean("IsChecked");
+                        //判断保存时复选框的状态和加载时是否一样
+                        JSONObject json = null;
+                        switch (i) {
+                            case 0:
+                                json = new JSONObject(tagObj.toString());
+                                json.put("NewIsChecked", isCurrentCheck);
+                                rules.put(json);
+                                break;
+                            case 1:
+                                json = new JSONObject(tagObj.toString());
+                                json.put("NewIsChecked", isCurrentCheck);
+                                rules.put(json);
+                                break;
+                            case 2:
+                                json = new JSONObject(tagObj.toString());
+                                json.put("NewIsChecked", isCurrentCheck);
+                                changeProblems.put(json);
+                                break;
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
-                }catch (Exception ex){
-                    ex.printStackTrace();
+                }
+            }else{
+
+                switch (i) {
+                    case 0:
+                        rules.put(priceRules);
+                        break;
+                    case 1:
+                        rules.put(otherRules);
+                        break;
+                    case 2:
+                        changeProblems.put(problems);
+                        break;
                 }
             }
         }

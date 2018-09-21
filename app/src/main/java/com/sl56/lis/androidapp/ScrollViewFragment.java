@@ -42,6 +42,7 @@ public class ScrollViewFragment extends Fragment {
     private Boolean isRulesChanged;
     private int batteryTypes=0;//电池类别数量
     private Boolean isInit=true;
+    private Boolean isCreated=false;//是否执行了onCreateView方法，只有点击对应的选项卡才会调用onCreateView
 
     /**
      *
@@ -86,6 +87,7 @@ public class ScrollViewFragment extends Fragment {
      */
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        isCreated=true;
         View view ;//根据传入的JsonArray生成复选框，若JsonArray为null则生成备注输入框
         if(array==null){
             view = inflater.inflate(R.layout.checkgoodsremark,null);
@@ -232,6 +234,9 @@ public class ScrollViewFragment extends Fragment {
     }
     public Integer getCellQuantity(){
         return cellQuantity;
+    }
+    public Boolean getIsCreated(){
+        return isCreated;
     }
     public class EditChangedListener implements TextWatcher {
 
