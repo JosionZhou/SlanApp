@@ -394,12 +394,25 @@ public class StationMemberSettingActivity extends AppCompatActivity {
                 createSwipMenuType=0;
                 break;
             case R.id.save:
-                dialog = new MaterialDialog.Builder(StationMemberSettingActivity.this)
-                        .content("正在保存数据")
-                        .progress(true,0)
-                        .cancelable(false)
-                        .show();
-                save();
+                try {
+                    if(!Global.getHeader().getBoolean("CanEditGroupMember")){
+                        dialog = new MaterialDialog.Builder(StationMemberSettingActivity.this)
+                                .content("当前账号无权限保存！")
+                                .cancelable(false)
+                                .title("保存失败")
+                                .positiveText("确定")
+                                .show();
+                        return false;
+                    }
+                    dialog = new MaterialDialog.Builder(StationMemberSettingActivity.this)
+                            .content("正在保存数据")
+                            .progress(true,0)
+                            .cancelable(false)
+                            .show();
+                    save();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
