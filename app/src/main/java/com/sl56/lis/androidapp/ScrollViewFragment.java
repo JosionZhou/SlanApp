@@ -1,11 +1,13 @@
 package com.sl56.lis.androidapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.InputType;
@@ -23,6 +25,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +47,8 @@ public class ScrollViewFragment extends Fragment {
     private int batteryTypes=0;//电池类别数量
     private Boolean isInit=true;
     private Boolean isCreated=false;//是否执行了onCreateView方法，只有点击对应的选项卡才会调用onCreateView
+    private boolean isListen=true;
+    private ArrayList<Integer> disabledIndexList;//记录初次加载时获取的已经勾选的的制单资料类型
 
     /**
      *
@@ -191,6 +197,77 @@ public class ScrollViewFragment extends Fragment {
 //                                                })
 //                                                .show();
 //                                    }
+                                }
+                                else if(tagObj.has("RemarkTemplates") && tagObj.getJSONArray("RemarkTemplates").length()>0){
+                                    final JSONArray list = tagObj.getJSONArray("RemarkTemplates");
+                                    ArrayList<String> items = new ArrayList<String>();
+                                    final ArrayList<Integer> selectedIndies = new ArrayList<Integer>();
+                                    for(int i=0;i<list.length();i++){
+                                        items.add(list.getJSONObject(i).getString("key"));
+                                        if(list.getJSONObject(i).getJSONObject("value").getBoolean("value"))
+                                            selectedIndies.add(i);
+                                    }
+                                    if(disabledIndexList==null){
+                                        disabledIndexList = new ArrayList<Integer>();
+                                        disabledIndexList.addAll(selectedIndies);
+                                    }
+                                    if(isListen) {
+                                        MaterialDialog.Builder builder =  new MaterialDialog.Builder(context)
+                                                .title("请选择子项")
+                                                .items(items)
+                                                .cancelable(true)
+                                                .negativeText("取消")
+                                                .itemsCallbackMultiChoice(selectedIndies.size()>0?selectedIndies.toArray(new Integer[]{0}):null, new MaterialDialog.ListCallbackMultiChoice() {
+                                                    @Override
+                                                    public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
+                                                        try {
+                                                            isListen = false;
+                                                            if (which.length > 0) {
+                                                                v.setChecked(true);
+                                                                for (int i = 0; i < list.length(); i++) {
+                                                                    if (Arrays.asList(which).contains(i)) {
+                                                                        list.getJSONObject(i).getJSONObject("value").put("value", true);
+                                                                    } else {
+                                                                        list.getJSONObject(i).getJSONObject("value").put("value", false);
+                                                                    }
+                                                                }
+                                                                tagObj.put("NewIsChecked", true);
+                                                            } else {
+                                                                for (int i = 0; i < list.length(); i++) {
+                                                                    list.getJSONObject(i).getJSONObject("value").put("value", false);
+                                                                }
+                                                                v.setChecked(false);
+                                                                tagObj.put("NewIsChecked", false);
+                                                            }
+                                                        } catch (JSONException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                        finally {
+                                                            isListen=true;
+                                                        }
+                                                        return false;
+                                                    }
+                                                })
+                                                .cancelListener(new DialogInterface.OnCancelListener() {
+                                                    @Override
+                                                    public void onCancel(DialogInterface dialog) {
+                                                        isListen = false;
+                                                        v.setChecked(!checked);
+                                                        try {
+                                                            tagObj.put("NewIsChecked", !checked);
+                                                        } catch (JSONException e) {
+                                                            e.printStackTrace();
+                                                        }finally {
+                                                            isListen=true;
+                                                        }
+                                                    }
+                                                })
+                                                .positiveText("确定");
+                                        if(disabledIndexList.size()>0)
+                                            builder.itemsDisabledIndices(disabledIndexList.toArray(new Integer[]{0}));
+                                        builder.show();
+                                    }
+                                    if(!isListen) isListen=true;
                                 }
                                 //选择有添加费用的报价规则时弹出提示框(因服务器端已禁止子对象公式运算，此功能暂时注释)
 //                                if(checked && fragmentIndex==0){
