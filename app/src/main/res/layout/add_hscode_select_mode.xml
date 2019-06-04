@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <com.jaredrummler.materialspinner.MaterialSpinner
+        android:id="@+id/spinner_hscode_class"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:hint="选择类别"
+        android:spinnerMode="dialog"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
+    <com.jaredrummler.materialspinner.MaterialSpinner
+        android:id="@+id/spinner_hscode_chapter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:hint="选择章"
+        android:spinnerMode="dialog"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
+    <com.jaredrummler.materialspinner.MaterialSpinner
+        android:id="@+id/spinner_hscode_prefourdigit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:hint="选择前四位"
+        android:spinnerMode="dialog"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
+    <ListView
+        android:id="@+id/lv_hscode_select"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
