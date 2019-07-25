@@ -1,4 +1,4 @@
-package com.idatachina.weixixi.barcodescandemo;
+package com.sl56.lis.androidapp;
 
 import android.content.Context;
 import android.content.Intent;

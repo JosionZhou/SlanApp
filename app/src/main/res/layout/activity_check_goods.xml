@@ -17,13 +17,14 @@
         android:background="@color/linecolor"/>
 
     <EditText
+        android:id="@+id/etreferencenumber"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:inputType="textPersonName"
-        android:hint="请扫描单号"
         android:layout_alignParentTop="true"
-        android:id="@+id/etreferencenumber"
-        android:background="@drawable/checkgoods_referencenumber"/>
+        android:background="@drawable/checkgoods_referencenumber"
+        android:hint="请扫描单号"
+        android:inputType="textPersonName"
+        android:text="2018046811" />
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"

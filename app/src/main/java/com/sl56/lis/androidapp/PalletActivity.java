@@ -1,12 +1,16 @@
 package com.sl56.lis.androidapp;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -60,12 +64,15 @@ public class PalletActivity extends AppCompatActivity {
     private ArrayList<Map.Entry<String,Integer>> palletCategories = new ArrayList<>();
     private Map<String,Integer> bindingStationList = new Hashtable<>();
     private DBHelper dbHelper = new DBHelper(this);
-    private MaterialDialog progressDialog;
+    //private MaterialDialog progressDialog;
     private List<PalletInfo> palletInfoList = new ArrayList<>();
     private ListView lvShipments;
     private CheckBox cbCustoms;
     private CheckBox cbBattery;
-    private boolean isProgressDialogShowing=false;
+    private ScannerInterface scanner;
+    BroadcastReceiver scanReceiver;
+    private static final String RES_ACTION = "android.intent.action.SCANRESULT";//****重要
+   // private boolean isProgressDialogShowing=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,16 +86,26 @@ public class PalletActivity extends AppCompatActivity {
         lvShipments = (ListView)findViewById(R.id.lv_shipments);
         etBarCode = (EditText)findViewById(R.id.etBarCode);
         etBarCode.selectAll();
-        etBarCode.setOnKeyListener(new View.OnKeyListener() {
+        /*etBarCode.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    pallet();
+              if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_F9&&keyEvent.getAction() == KeyEvent.ACTION_UP){
+                    if( etBarCode.isEnabled()) {
+                        Log.e("a","输入框可用");
+
+                        scanner.lockScanKey();//锁定扫描键
+                    }
+                    else {
+                        Log.e("a","输入框不可用");
+                    }
                     return true;
                 }
+                else{
+                  Log.e("a","不是扫描键");
+              }
                 return false;
             }
-        });
+        });*/
         textView.setText(dateStr);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,6 +141,38 @@ public class PalletActivity extends AppCompatActivity {
         actionBar.setDisplayShowTitleEnabled(true);
         forceShowOverflowMenu();
         BindPalletNoList();
+        initScanner();
+    }
+    private  void initScanner()
+    {
+        scanner=new ScannerInterface(this);
+        //scanner.open();
+        //scanner.resultScan();
+        scanner.setOutputMode(1);
+        scanner.enableFailurePlayBeep(true);//扫描失败蜂鸣反馈  ***测试扫描失败反馈接口，解码失败会出现错误提示
+    }
+    protected  void onResume()
+    {
+        super.onResume();
+        scanReceiver = new ScannerResultReceiver();
+        IntentFilter intentFilter = new IntentFilter(RES_ACTION);
+        registerReceiver(scanReceiver, intentFilter);
+    }
+    @Override
+    protected void onPause() {//��onPause��ע��㲥������
+        // TODO Auto-generated method stub
+        super.onPause();
+        unregisterReceiver(scanReceiver);
+        //PDA内存是有限的，一款优秀的APP懂得在适当的时期释放自己所占的资源，如果不会收一般有两种结果，
+        //一种是系统强行回收，二是内存溢出。
+    }
+
+    @Override
+    protected void onDestroy() {
+        // TODO Auto-generated method stub
+        super.onDestroy();
+       // scanner.resultScan();//重置串口，恢复iScan默认设置。一般在退出整个程序时调用一次。
+        //scanner.close();
     }
 
     /**
@@ -407,12 +456,14 @@ public class PalletActivity extends AppCompatActivity {
         final String temp = etBarCode.getText().toString().trim();
         String no ="";
         if(temp.isEmpty()){
+            enableScanner();
                    builder.content("单号不能为空")
                     .show();
             VibratorHelper.shock(this);
             return;
         }
         if(bindStationId==null){
+            enableScanner();
             builder.content("请设置语音提示岗位")
                     .show();
             VibratorHelper.shock(this);
@@ -432,6 +483,7 @@ public class PalletActivity extends AppCompatActivity {
                 no=temp;
                 break;
             default:
+                enableScanner();
                 new  MaterialDialog.Builder(this)
                         .title("错误")
                         .content("扫描的单号异常")
@@ -444,6 +496,7 @@ public class PalletActivity extends AppCompatActivity {
         //Aramex 多件是同一个单号，不做检查
         if (no.length() != 11 && Find(no))
         {
+            enableScanner();
             new MaterialDialog.Builder(this)
                     .title("提示")
                     .content("此票已扫描")
@@ -452,9 +505,10 @@ public class PalletActivity extends AppCompatActivity {
             etBarCode.setFocusable(true);
             etBarCode.selectAll();
             VibratorHelper.shock(this);
+
             return;
         }
-        progressDialog =  new MaterialDialog.Builder(PalletActivity.this)
+        /*progressDialog =  new MaterialDialog.Builder(PalletActivity.this)
                 .progress(true,0)
                 .content("数据获取中...")
                 .cancelable(false)
@@ -465,9 +519,9 @@ public class PalletActivity extends AppCompatActivity {
                     }
                 })
                 .show();
-        isProgressDialogShowing=true;
+        isProgressDialogShowing=true;*/
         //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
-        Observable.create(new Observable.OnSubscribe<Boolean>() {
+        /*Observable.create(new Observable.OnSubscribe<Boolean>() {
             @Override
             public void call(Subscriber<? super Boolean> subscriber) {
                 try {
@@ -500,7 +554,7 @@ public class PalletActivity extends AppCompatActivity {
                             .show();
                 }
             }
-        });
+        });*/
         Observable.create(new Observable.OnSubscribe<JSONObject>() {
             @Override
             public void call(Subscriber<? super JSONObject> subscriber) {
@@ -516,6 +570,7 @@ public class PalletActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
                 subscriber.onNext(HttpHelper.getJSONObjectFromUrl("PalletScan",params));
             }
         })
@@ -525,12 +580,14 @@ public class PalletActivity extends AppCompatActivity {
             @Override
             public void call(JSONObject jsonObject) {
                 try {
-                    progressDialog.dismiss();
+                    //progressDialog.dismiss();
+
                     String message = jsonObject.getString("Message");
                     if(!message.isEmpty()) {
                         VibratorHelper.shock(PalletActivity.this);
                         new MaterialDialog.Builder(PalletActivity.this)
                                 .positiveText("确定")
+                                .canceledOnTouchOutside(false)//点击外部不取消对话框
                                 .title("操作失败")
                                 .content(message)
                                 .show();
@@ -551,12 +608,21 @@ public class PalletActivity extends AppCompatActivity {
                             AddPallte(palletId, palletNo,palletCategoryId,cbCustoms.isChecked(),cbBattery.isChecked());
                         }
                         etBarCode.selectAll();
+
                     }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
+
                 }
+              enableScanner();
             }
         });
+    }
+    private void enableScanner(){
+        etBarCode.setEnabled(true);
+        scanner.lockScanKey();
+       scanner.enableFailurePlayBeep(true);
     }
 
     /**
@@ -644,7 +710,32 @@ public class PalletActivity extends AppCompatActivity {
         public Boolean IsCustoms;
     }
 
-
+    /**
+     * 扫描结果广播接收
+     */
+    private class ScannerResultReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            //scanner.scan_stop();
+            final String scanResult = intent.getStringExtra("value");//***重要 Extral参数
+            /** 如果条码长度>0，解码成功。如果条码长度等于0解码失败。*/
+            if (intent.getAction().equals(RES_ACTION)){//获取扫描结果   ****重要 Action
+                if(scanResult.length()>0){
+                    scanner.unlockScanKey();
+                    etBarCode.setEnabled(false);
+                    etBarCode.setText(scanResult);
+                    pallet();
+                }else{
+                    //scanner.resultScan();
+                   //
+                    /**扫描失败提示使用有两个条件：
+                     1，需要先将扫描失败提示接口打开只能在广播模式下使用，其他模式无法调用。
+                     2，通过判断条码长度来判定是否解码成功，当长度等于0时表示解码失败。
+                     * */
+                   // Toast.makeText(getApplicationContext(), "解码失败!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
     private class PalletTask extends AsyncTask<Void,Void,Boolean>{
 
         JSONObject params;

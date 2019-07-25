@@ -65,25 +65,24 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"/>
 
-            <EditText
-                android:id="@+id/userNo"
-                android:layout_height="60dp"
-                android:layout_width="match_parent"
-                android:hint="@string/prompt_userNo"
-                android:textColorHint="@color/gray"
-                android:gravity="center|left"
-                android:textSize="20sp"
-                android:height="60dp"
-                android:singleLine="true"
-                android:background="@drawable/userno_shape"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:imeOptions="actionNext"
-                android:lines="1"
-                android:nextFocusForward="@+id/password"
-                android:drawableLeft="@drawable/user"
-                android:text="szsl028"/>
+        <EditText
+            android:id="@+id/userNo"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:height="60dp"
+            android:background="@drawable/userno_shape"
+            android:drawableLeft="@drawable/user"
+            android:gravity="center|left"
+            android:hint="@string/prompt_userNo"
+            android:imeOptions="actionNext"
+            android:lines="1"
+            android:nextFocusForward="@+id/password"
+            android:singleLine="true"
+            android:textColorHint="@color/gray"
+            android:textSize="20sp" />
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -92,23 +91,22 @@
             android:layout_marginRight="5dp"/>
 
 
-            <EditText
-                android:id="@+id/password"
-                android:layout_height="60dp"
-                android:layout_width="match_parent"
-                android:hint="@string/prompt_password"
-                android:textColorHint="@color/gray"
-                android:gravity="center|left"
-                android:textSize="20sp"
-                android:height="60dp"
-                android:maxLines="1"
-                android:inputType="textPassword"
-                android:background="@drawable/password_shape"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:imeActionId="@+id/login"
-                android:drawableLeft="@drawable/password"
-                android:text="JOSION1020"/>
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:height="60dp"
+            android:background="@drawable/password_shape"
+            android:drawableLeft="@drawable/password"
+            android:gravity="center|left"
+            android:hint="@string/prompt_password"
+            android:imeActionId="@+id/login"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:textColorHint="@color/gray"
+            android:textSize="20sp" />
 
 
             <Button

@@ -8,14 +8,15 @@
     android:padding="3dp"
     android:orientation="vertical"
     tools:context="com.sl56.lis.androidapp.PalletActivity">
+
     <EditText
+        android:id="@+id/etBarCode"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:id="@+id/etBarCode"
+        android:background="@drawable/checkgoods_referencenumber"
         android:hint="请输入单号"
         android:singleLine="true"
-        android:text="JJD014600004285555319"
-        android:background="@drawable/checkgoods_referencenumber"/>
+        android:text="JJD014600007066821482" />
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
