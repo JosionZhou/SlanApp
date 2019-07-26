@@ -27,15 +27,20 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bigmercu.cBox.CheckBox;
 import com.jaredrummler.materialspinner.MaterialSpinner;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,7 +55,7 @@ import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 
-public class PalletActivity extends AppCompatActivity {
+public class PalletActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
     private String errorMsg;
     private MaterialSpinner palletCategoriesspinner;
     private MaterialSpinner palletnospinner;
@@ -71,16 +76,18 @@ public class PalletActivity extends AppCompatActivity {
     private CheckBox cbBattery;
     private ScannerInterface scanner;
     BroadcastReceiver scanReceiver;
+    private DatePickerDialog dpd;
+    private TextView tvDate;
     private static final String RES_ACTION = "android.intent.action.SCANRESULT";//****重要
    // private boolean isProgressDialogShowing=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pallet);
-        TextView textView = (TextView)findViewById(R.id.tv_date);
-        Date now = new Date();
-        DateFormat d = DateFormat.getDateInstance();
-        String dateStr = d.format(now);
+        tvDate = (TextView)findViewById(R.id.tv_date);
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        String dateStr =sdf.format(new Date());
+        tvDate.setText(dateStr);
         cbCustoms = (CheckBox)findViewById(R.id.cb_customs);
         cbBattery =(CheckBox)findViewById(R.id.cb_battery);
         lvShipments = (ListView)findViewById(R.id.lv_shipments);
@@ -106,11 +113,32 @@ public class PalletActivity extends AppCompatActivity {
                 return false;
             }
         });*/
-        textView.setText(dateStr);
-        textView.setOnClickListener(new View.OnClickListener() {
+        tvDate.setText(dateStr);
+        tvDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Calendar now = Calendar.getInstance();
+            /*
+            It is recommended to always create a new instance whenever you need to show a Dialog.
+            The sample app is reusing them because it is useful when looking for regressions
+            during testing
+             */
+                if (dpd == null) {
+                    dpd = DatePickerDialog.newInstance(
+                            PalletActivity.this,
+                            now.get(Calendar.YEAR),
+                            now.get(Calendar.MONTH),
+                            now.get(Calendar.DAY_OF_MONTH)
+                    );
+                } else {
+                    dpd.initialize(
+                            PalletActivity.this,
+                            now.get(Calendar.YEAR),
+                            now.get(Calendar.MONTH),
+                            now.get(Calendar.DAY_OF_MONTH)
+                    );
+                }
+                dpd.show( PalletActivity.this.getFragmentManager(), "Datepickerdialog");
             }
         });
         palletnospinner = (MaterialSpinner)findViewById(R.id.spinner_palletno);
@@ -438,7 +466,7 @@ public class PalletActivity extends AppCompatActivity {
             palletInfoList.add(newItem);
             List<String> palletNoList = new ArrayList<>();
             for(PalletInfo pi:palletInfoList)
-                palletNoList.add(pi.No);
+                palletNoList.add(0,pi.No);
             palletnospinner.setItems(palletNoList);
             palletnospinner.setSelectedIndex(palletInfoList.indexOf(newItem));
 //            bsPalletNoList.ResetBindings(false);
@@ -635,7 +663,10 @@ public class PalletActivity extends AppCompatActivity {
             public void call(Subscriber<? super JSONObject> subscriber) {
                 JSONObject params = new JSONObject();
                 try {
-                    params.put("dt","/Date("+(new Date()).getTime()+"+0800)/");
+                    SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd" );
+                    String dateString=tvDate.getText().toString();
+                    Date date=sdf.parse(dateString) ;
+                    params.put("dt","/Date("+date.getTime()+"+0800)/");
                     params.put("header",Global.getHeader());
                     subscriber.onNext(HttpHelper.getJSONObjectFromUrl("GetPalletInfoList",params));
                 } catch (Exception e) {
@@ -654,16 +685,15 @@ public class PalletActivity extends AppCompatActivity {
                     List<String> palletNoList = new ArrayList<String>();
                     for(int i =0;i<array.length();i++){
                         PalletInfo pi = new PalletInfo();
-                        pi.No = jsonObject.getJSONArray("Details").getJSONObject(i).getString("No");
-                        pi.Id = jsonObject.getJSONArray("Details").getJSONObject(i).getInt("Id");
-                        pi.IsCustoms = jsonObject.getJSONArray("Details").getJSONObject(i).getBoolean("IsCustoms");
-                        pi.CategoryId = jsonObject.getJSONArray("Details").getJSONObject(i).getInt("CategoryId");
-                        pi.IsBattery = jsonObject.getJSONArray("Details").getJSONObject(i).getBoolean("IsBattery");
+                        pi.No = array.getJSONObject(i).getString("No");
+                        pi.Id = array.getJSONObject(i).getInt("Id");
+                        pi.IsCustoms = array.getJSONObject(i).getBoolean("IsCustoms");
+                        pi.CategoryId = array.getJSONObject(i).getInt("CategoryId");
+                        pi.IsBattery = array.getJSONObject(i).getBoolean("IsBattery");
                         palletInfoList.add(pi);
                         palletNoList.add(pi.No);
                     }
-                    if(palletNoList.size()>0)
-                        palletnospinner.setItems(palletNoList);
+                    palletnospinner.setItems(palletNoList);
                     AddPallte(-1,"待生成",0,true,true);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -698,6 +728,21 @@ public class PalletActivity extends AppCompatActivity {
         PalletTask task = new PalletTask("GetPalletCategoryInfoList",params);
         task.execute();
         return null;
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+        String dateString=year+"-"+(monthOfYear+1)+"-"+dayOfMonth;
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        Date date  = new Date();
+        try {
+            date = sdf.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        tvDate.setText(sdf.format(date));
+        BindPalletNoList();
+        dpd = null;
     }
 
 
