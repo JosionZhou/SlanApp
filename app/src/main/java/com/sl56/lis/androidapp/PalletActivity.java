@@ -71,6 +71,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private DBHelper dbHelper = new DBHelper(this);
     //private MaterialDialog progressDialog;
     private List<PalletInfo> palletInfoList = new ArrayList<>();
+    private List<String> palletNoList=new ArrayList<>() ;
     private ListView lvShipments;
     private CheckBox cbCustoms;
     private CheckBox cbBattery;
@@ -113,7 +114,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 return false;
             }
         });*/
-        tvDate.setText(dateStr);
+;
         tvDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -236,6 +237,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                         @Override
                         public void call(JSONObject jsonObject) {
                             try {
+                                shipments.clear();
                                 JSONArray array = jsonObject.getJSONArray("Details");
                                 shipments = new ArrayList<String>();
                                 for(int i =0;i<array.length();i++){
@@ -291,12 +293,14 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 finish();
                 break;
             case R.id.add:
-                Intent intent = getIntent();
-                intent.putExtra("action","add");
-                overridePendingTransition(0, 0);
-                finish();
-                overridePendingTransition(0, 0);
-                startActivity(intent);
+                palletId=0;
+                palletCategoriesspinner.setEnabled(true);
+                AddPallte(-1,"待生成",0,false,false,true);
+                if(palletNoList.size()>0){
+                    palletnospinner.setItems(palletNoList);
+                }
+                shipments.clear();
+                reBindShipmentsListView();
                 break;
             case R.id.groupmember:
                 Intent intent2 = new Intent(PalletActivity.this, StationMemberSettingActivity.class);
@@ -430,12 +434,10 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         }
         if (pi!=null)
         {
+            palletNoList.remove(pi.No);
             palletInfoList.remove(pi);
-            List<String> palletNoList = new ArrayList<>();
-            for(PalletInfo item:palletInfoList)
-                palletNoList.add(item.No);
-            if(palletNoList.size()>0)
-                palletnospinner.setItems(palletNoList);
+
+
 
         }
 
@@ -449,29 +451,30 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
      * @param isCustomer 是否单独报关
      * @param isBattery 是否电池板
      */
-    private void AddPallte(int id, String value,int palletCategoryId,Boolean isCustomer,Boolean isBattery)
-    {
-        Boolean isContains=false;
-        for(PalletInfo pi : palletInfoList){
-            if(pi.Id==id)isContains=true;
-        }
-        if (palletInfoList.size()==0 || !isContains)
-        {
+    private void AddPallte(int id, String value,int palletCategoryId,Boolean isCustomer,Boolean isBattery,boolean isInsert) {
+        if(!palletNoList.contains(value)){
             PalletInfo newItem = new PalletInfo();
             newItem.Id = id;
             newItem.No = value;
             newItem.CategoryId = palletCategoryId;
             newItem.IsBattery = isBattery;
             newItem.IsCustoms = isCustomer;
-            palletInfoList.add(newItem);
-            List<String> palletNoList = new ArrayList<>();
+            if(isInsert){
+                palletInfoList.add(0,newItem);
+                palletNoList.add(0,value);
+            }
+            else{
+                palletInfoList.add(newItem);
+                palletNoList.add(value);
+            }
+        }
+
+
+            /*List<String> palletNoList = new ArrayList<>();
             for(PalletInfo pi:palletInfoList)
                 palletNoList.add(0,pi.No);
             palletnospinner.setItems(palletNoList);
-            palletnospinner.setSelectedIndex(palletInfoList.indexOf(newItem));
-//            bsPalletNoList.ResetBindings(false);
-//            cbPlatteCategory.SelectedValue = palletCategoryId;
-        }
+            palletnospinner.setSelectedIndex(palletInfoList.indexOf(newItem));*/
 
 
 //        cbPalletNoList.SelectedValue = id;
@@ -633,7 +636,10 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                             //移除临时板
                             RemovePallet(-1);
                             //将服务端生成的板添加到板列表
-                            AddPallte(palletId, palletNo,palletCategoryId,cbCustoms.isChecked(),cbBattery.isChecked());
+                            AddPallte(palletId, palletNo,palletCategoryId,cbCustoms.isChecked(),cbBattery.isChecked(),true);
+                            if(palletNoList.size()>0){
+                                palletnospinner.setItems(palletNoList);
+                            }
                         }
                         etBarCode.selectAll();
 
@@ -680,21 +686,24 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             @Override
             public void call(JSONObject jsonObject) {
                 try {
+
+                    palletInfoList.clear();
+                    palletNoList.clear();
                     //TODO 获取板号列表
                     JSONArray array =  jsonObject.getJSONArray("Details");
-                    List<String> palletNoList = new ArrayList<String>();
+
                     for(int i =0;i<array.length();i++){
-                        PalletInfo pi = new PalletInfo();
-                        pi.No = array.getJSONObject(i).getString("No");
-                        pi.Id = array.getJSONObject(i).getInt("Id");
-                        pi.IsCustoms = array.getJSONObject(i).getBoolean("IsCustoms");
-                        pi.CategoryId = array.getJSONObject(i).getInt("CategoryId");
-                        pi.IsBattery = array.getJSONObject(i).getBoolean("IsBattery");
-                        palletInfoList.add(pi);
-                        palletNoList.add(pi.No);
+
+                        AddPallte(array.getJSONObject(i).getInt("Id"),array.getJSONObject(i).getString("No"),array.getJSONObject(i).getInt("CategoryId"),
+                                array.getJSONObject(i).getBoolean("IsCustoms"), array.getJSONObject(i).getBoolean("IsBattery"),false);
+
                     }
-                    palletnospinner.setItems(palletNoList);
-                    AddPallte(-1,"待生成",0,true,true);
+                    if(palletNoList.size()>0){
+                        palletnospinner.setItems(palletNoList);
+                        setPalletDetails(0);
+                    }
+
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
