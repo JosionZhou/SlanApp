@@ -27,6 +27,7 @@ public class ArchiveScanActivity extends AppCompatActivity {
     private EditText etReferenceNumber;
     private TextView tvClearanceInfo;
     private MaterialDialog pDialog;
+    private ScannerInterface scanner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,13 +44,21 @@ public class ArchiveScanActivity extends AppCompatActivity {
                 return false;
             }
         });
-
+        initScanner();
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         // 是否显示应用程序图标，默认为true
         actionBar.setDisplayHomeAsUpEnabled(true);
         // 是否显示应用程序标题，默认为true
         actionBar.setDisplayShowTitleEnabled(true);
         forceShowOverflowMenu();
+    }
+    private  void initScanner()
+    {
+        scanner=new ScannerInterface(this);
+        //scanner.open();
+        //scanner.resultScan();
+        scanner.setOutputMode(0);
+        scanner.enableFailurePlayBeep(true);//扫描失败蜂鸣反馈  ***测试扫描失败反馈接口，解码失败会出现错误提示
     }
     private void forceShowOverflowMenu() {
         try {

@@ -62,7 +62,7 @@ public class HttpHelper {
     * */
     private static String execPost(String action, JSONObject data) {
         String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
-        //String urlString="http://192.168.0.240:8011/MobileServiceV2.svc/http/"+action;
+       // String urlString="http://192.168.0.240:8011/MobileServiceV2.svc/http/"+action;
         StringBuilder sb=new StringBuilder();
         URL url=null;
         HttpURLConnection conn = null ;
@@ -74,12 +74,12 @@ public class HttpHelper {
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Content-Type", "application/json");
             //设置连接超时30秒
-            conn.setConnectTimeout(30*1000);
+            conn.setConnectTimeout(20*1000);
             // 发送POST请求必须设置如下两行
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setUseCaches(false);
-            conn.setReadTimeout(10*1000);
+            conn.setReadTimeout(20*1000);
             conn.connect();
             OutputStreamWriter outputStreamWriter=null;
             outputStreamWriter=new OutputStreamWriter(conn.getOutputStream());
@@ -103,8 +103,8 @@ public class HttpHelper {
 
 
     static JSONObject getVersion() throws Exception {
-        //String urlString = "http://192.168.0.240:8019/Update.ashx?Action=CheckVersion&AppKey=Android";
-        String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
+        String urlString = "http://192.168.0.240:8019/Update.ashx?Action=CheckVersion&AppKey=Android";
+        //String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");// 提交模式

@@ -79,6 +79,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     BroadcastReceiver scanReceiver;
     private DatePickerDialog dpd;
     private TextView tvDate;
+
     private static final String RES_ACTION = "android.intent.action.SCANRESULT";//****重要
    // private boolean isProgressDialogShowing=false;
     @Override
@@ -295,11 +296,14 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             case R.id.add:
                 palletId=0;
                 palletCategoriesspinner.setEnabled(true);
-                AddPallte(-1,"待生成",0,false,false,true);
+                AddPallte(0,"待生成",0,false,false,true);
                 if(palletNoList.size()>0){
                     palletnospinner.setItems(palletNoList);
+                    palletnospinner.setSelectedIndex(0);
                 }
                 shipments.clear();
+                cbBattery.setEnabled(true);
+                cbCustoms.setEnabled(true);
                 reBindShipmentsListView();
                 break;
             case R.id.groupmember:
@@ -486,18 +490,23 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         builder.title("扫描失败").positiveText("确定");
         final String temp = etBarCode.getText().toString().trim();
         String no ="";
-        if(temp.isEmpty()){
-            enableScanner();
-                   builder.content("单号不能为空")
-                    .show();
-            VibratorHelper.shock(this);
-            return;
-        }
+
         if(bindStationId==null){
-            enableScanner();
-            builder.content("请设置语音提示岗位")
-                    .show();
             VibratorHelper.shock(this);
+            builder.content("请设置语音提示岗位")
+                    .positiveText("确定")
+                    .canceledOnTouchOutside(false)//点击外部不取消对话框
+                    .onAny(new MaterialDialog.SingleButtonCallback(){
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            if (which == DialogAction.POSITIVE) {
+                                enableScanner();
+                                etBarCode.setFocusable(true);
+                                etBarCode.selectAll();
+                            }
+                        }
+                    })
+                    .show();
+
             return;
         }
         switch (temp.length()){
@@ -514,78 +523,48 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 no=temp;
                 break;
             default:
-                enableScanner();
+                VibratorHelper.shock(this);
                 new  MaterialDialog.Builder(this)
                         .title("错误")
                         .content("扫描的单号异常")
+                        .canceledOnTouchOutside(false)//点击外部不取消对话框
                         .positiveText("确定")
+                        .onAny(new MaterialDialog.SingleButtonCallback(){
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                if (which == DialogAction.POSITIVE) {
+                                    enableScanner();
+                                    etBarCode.setFocusable(true);
+                                    etBarCode.selectAll();
+                                }
+                            }
+                        })
                         .show();
-                VibratorHelper.shock(this);
+
                 return;
         }
         etBarCode.setText(no);
         //Aramex 多件是同一个单号，不做检查
         if (no.length() != 11 && Find(no))
         {
-            enableScanner();
+            VibratorHelper.shock(this);
             new MaterialDialog.Builder(this)
                     .title("提示")
                     .content("此票已扫描")
                     .positiveText("确定")
+                    .canceledOnTouchOutside(false)//点击外部不取消对话框
+                    .onAny(new MaterialDialog.SingleButtonCallback(){
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            if (which == DialogAction.POSITIVE) {
+                                enableScanner();
+                                etBarCode.setFocusable(true);
+                                etBarCode.selectAll();
+                            }
+                        }
+                    })
                     .show();
-            etBarCode.setFocusable(true);
-            etBarCode.selectAll();
-            VibratorHelper.shock(this);
-
             return;
         }
-        /*progressDialog =  new MaterialDialog.Builder(PalletActivity.this)
-                .progress(true,0)
-                .content("数据获取中...")
-                .cancelable(false)
-                .dismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        isProgressDialogShowing=false;
-                    }
-                })
-                .show();
-        isProgressDialogShowing=true;*/
-        //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
-        /*Observable.create(new Observable.OnSubscribe<Boolean>() {
-            @Override
-            public void call(Subscriber<? super Boolean> subscriber) {
-                try {
-                    Thread.sleep(10*1000);
-                    subscriber.onNext(isProgressDialogShowing);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        })
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Action1<Boolean>() {
-            @Override
-            public void call(final Boolean isShowing) {
-                if(isShowing){
-                    VibratorHelper.shock(PalletActivity.this);
-                    progressDialog.dismiss();
-                    progressDialog =  new MaterialDialog.Builder(PalletActivity.this)
-                            .content("数据获取失败，是否重新获取？")
-                            .cancelable(false)
-                            .positiveText("是")
-                            .negativeText("否")
-                            .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                @Override
-                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                    pallet();
-                                }
-                            })
-                            .show();
-                }
-            }
-        });*/
+
         Observable.create(new Observable.OnSubscribe<JSONObject>() {
             @Override
             public void call(Subscriber<? super JSONObject> subscriber) {
@@ -621,12 +600,22 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                                 .canceledOnTouchOutside(false)//点击外部不取消对话框
                                 .title("操作失败")
                                 .content(message)
+                                .onAny(new MaterialDialog.SingleButtonCallback(){
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        if (which == DialogAction.POSITIVE) {
+                                            enableScanner();
+                                            etBarCode.selectAll();
+                                        }
+                                    }
+
+                                })
                                 .show();
-                        etBarCode.selectAll();
+
+
                     }else{
                         cbBattery.setEnabled(false);
                         cbCustoms.setEnabled(false);
-                        addItem(temp);
+                        addItem(etBarCode.getText().toString());
                         String pieceInfo = String.format("共%s件，剩余%s件",jsonObject.getString("TotalPiece"),jsonObject.getString("ResiduePiece"));
                         ((TextView)findViewById(R.id.tv_pieceinfo)).setText(pieceInfo);
                         //新增的一个板
@@ -634,7 +623,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                             palletId=jsonObject.getInt("PalletId");
                             palletNo=jsonObject.getString("PalletNo");
                             //移除临时板
-                            RemovePallet(-1);
+                            RemovePallet(0);
                             //将服务端生成的板添加到板列表
                             AddPallte(palletId, palletNo,palletCategoryId,cbCustoms.isChecked(),cbBattery.isChecked(),true);
                             if(palletNoList.size()>0){
@@ -642,14 +631,14 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                             }
                         }
                         etBarCode.selectAll();
-
+                        enableScanner();
                     }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
 
                 }
-              enableScanner();
+
             }
         });
     }
@@ -701,6 +690,11 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     if(palletNoList.size()>0){
                         palletnospinner.setItems(palletNoList);
                         setPalletDetails(0);
+                    }
+                    else{
+                       Number index= palletnospinner.getSelectedIndex();
+                        Number aa=index;
+
                     }
 
 

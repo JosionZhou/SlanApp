@@ -24,7 +24,7 @@
         android:background="@drawable/checkgoods_referencenumber"
         android:hint="请扫描单号"
         android:inputType="textPersonName"
-        android:text="2018046811" />
+        android:text="3333DDDRFF" />
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
