@@ -74,6 +74,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private List<Map.Entry<String,Integer>> companyList;
     private List<Map.Entry<String,Integer>> sites;
     private final String SDPATH = Environment.getExternalStorageDirectory() + "/";
+    private  TextView tvVersion;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +82,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         setContentView(R.layout.activity_login);
         TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         TextView tv = (TextView) this.findViewById(R.id.device_id);
+        tvVersion=(TextView)this.findViewById(R.id.version) ;
         deviceId=tm.getDeviceId();
         tv.setText("设备ID：" + deviceId);
         if(!NetWorkUitls.isNetworkConnected(LoginActivity.this)){
@@ -144,6 +146,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                         return;
                     }
                     String serverPublishDate = jsonObject.getString("PublishDate");
+                    tvVersion.setText("当前版本发布时间:"+serverPublishDate);
                     String localPublicshDate=null;
                     Boolean isUpdate=false;
                     DBHelper db = new DBHelper(LoginActivity.this);

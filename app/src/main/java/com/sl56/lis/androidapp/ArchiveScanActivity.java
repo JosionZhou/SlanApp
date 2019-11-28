@@ -38,6 +38,7 @@ public class ArchiveScanActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                    disableScanner();
                     ArchiveScan();
                     return true;
                 }
@@ -95,11 +96,11 @@ public class ArchiveScanActivity extends AppCompatActivity {
             refNumber=refNumber.substring(0,12);
         }
         exeNumber=refNumber;
-        pDialog = new MaterialDialog.Builder(this)
-                .content("数据同步中...")
-                .cancelable(false)
-                .progress(true,0)
-                .show();
+//        pDialog = new MaterialDialog.Builder(this)
+//                .content("数据同步中...")
+//                .cancelable(false)
+//                .progress(true,0)
+//                .show();
         Observable.create(new Observable.OnSubscribe<JSONObject>() {
             @Override
             public void call(Subscriber<? super JSONObject> subscriber) {
@@ -118,7 +119,8 @@ public class ArchiveScanActivity extends AppCompatActivity {
                 .subscribe(new Action1<JSONObject>() {
                     @Override
                     public void call(JSONObject jsonObject) {
-                        pDialog.dismiss();
+                        //pDialog.dismiss();
+                        enableScanner();
                         if(jsonObject!=null&&!jsonObject.toString().trim().isEmpty()){
                             try {
                                 if (jsonObject.toString().contains("Error")) {
@@ -130,6 +132,7 @@ public class ArchiveScanActivity extends AppCompatActivity {
                                         String errorMsg = jsonObject.getString("Message");
                                         showDialog("操作失败",errorMsg);
                                     }else{
+                                        //etReferenceNumber.setText("");
                                         tvClearanceInfo.setText(etReferenceNumber.getText().toString()+ " 扫描底单成功");
                                     }
                                 }
@@ -141,6 +144,14 @@ public class ArchiveScanActivity extends AppCompatActivity {
                     }
                 });
 
+    }
+    private void enableScanner(){
+        etReferenceNumber.setEnabled(true);
+        scanner.lockScanKey();
+    }
+    private  void  disableScanner(){
+        etReferenceNumber.setEnabled(false);
+        scanner.unlockScanKey();
     }
     private void showDialog(String title,String content){
         new MaterialDialog.Builder(ArchiveScanActivity.this)
