@@ -8,6 +8,7 @@ import android.app.LoaderManager.LoaderCallbacks;
 
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -143,28 +144,35 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                         getCompanyList();
                         return;
                     }
-                    String serverPublishDate = jsonObject.getString("PublishDate");
-                    String localPublicshDate=null;
+//                    String serverPublishDate = jsonObject.getString("PublishDate");
+                    String serverVersion = jsonObject.getString("Version");
+//                    String localPublicshDate=null;
                     Boolean isUpdate=false;
-                    DBHelper db = new DBHelper(LoginActivity.this);
-                    Cursor cursor = db.Fetch("PublishDate");//从数据库获取更新日期
-                    if(cursor.getCount()>0){
-                        cursor.moveToFirst();
-                        localPublicshDate = cursor.getString(1);
-                    }
-                    if(localPublicshDate==null){
-                        isUpdate=true;
-                        db.Inert("PublishDate",serverPublishDate);
-                    }
-                    else
-                    {
-                        Date localDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(localPublicshDate);
-                        Date serverDate =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(serverPublishDate);
-                        if(serverDate.getTime()>localDate.getTime()) {
-                            isUpdate = true;
-                            db.Update("PublishDate",serverPublishDate);
-                        }
-                    }
+//                    DBHelper db = new DBHelper(LoginActivity.this);
+//                    Cursor cursor = db.Fetch("PublishDate");//从数据库获取更新日期
+//                    if(cursor.getCount()>0){
+//                        cursor.moveToFirst();
+//                        localPublicshDate = cursor.getString(1);
+//                    }
+//                    if(localPublicshDate==null){
+//                        isUpdate=true;
+//                        db.Inert("PublishDate",serverPublishDate);
+//                    }
+//                    else
+//                    {
+//                        Date localDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(localPublicshDate);
+//                        Date serverDate =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(serverPublishDate);
+//                        if(serverDate.getTime()>localDate.getTime()) {
+//                            isUpdate = true;
+//                            db.Update("PublishDate",serverPublishDate);
+//                        }
+//                    }
+                    PackageInfo packageInfo = LoginActivity.this.getPackageManager()
+                            .getPackageInfo(LoginActivity.this.getPackageName(), 0);
+                    String currentVersion = packageInfo.versionName;
+                    //比较版本，-1：当前版本比服务端版本小 0：当前版本与服务端版本一致 1：当前版本比服务端版本大
+                    int result = compareVersion(currentVersion,serverVersion);
+                    isUpdate=(result==-1);
                     if(isUpdate){
                         pDialog = new MaterialDialog.Builder(LoginActivity.this)
                                 .content("正在下载更新...")
