@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.bigmercu.cBox:cbox:1.08@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/52bdb7b35ac526f28e98c2ba1da7ccf2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/52bdb7b35ac526f28e98c2ba1da7ccf2/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.bigmercu.cBox/cbox/1.08/dadf8abff48f8db2dfbc2a15aab01ed590c2dd0c/cbox-1.08-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

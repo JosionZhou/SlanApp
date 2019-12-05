@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.nex3z:flow-layout:0.1.2@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/a6f15e53a535bd7d170b7ef617f99be5/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/a6f15e53a535bd7d170b7ef617f99be5/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.nex3z/flow-layout/0.1.2/f976d0710679c49b2052f74135ed8ed6732339f7/flow-layout-0.1.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

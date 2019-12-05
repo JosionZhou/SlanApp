@@ -103,8 +103,8 @@ public class HttpHelper {
 
 
     static JSONObject getVersion() throws Exception {
-        String urlString = "http://192.168.0.240:8019/Update.ashx?Action=CheckVersion&AppKey=Android";
-        //String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
+        //String urlString = "http://192.168.0.240:8019/Update.ashx?Action=CheckVersion&AppKey=Android";
+        String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");// 提交模式
