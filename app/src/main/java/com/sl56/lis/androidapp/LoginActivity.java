@@ -74,6 +74,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private String downloadFileName;
     private List<Map.Entry<String,Integer>> companyList;
     private List<Map.Entry<String,Integer>> sites;
+    private  TextView tvVersion;
     private final String SDPATH = Environment.getExternalStorageDirectory() + "/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +83,20 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         setContentView(R.layout.activity_login);
         TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         TextView tv = (TextView) this.findViewById(R.id.device_id);
+        tvVersion=(TextView)this.findViewById(R.id.version2) ;
         deviceId=tm.getDeviceId();
         tv.setText("设备ID：" + deviceId);
+        String currentVersion = "";
+        try{
+            PackageInfo packageInfo = LoginActivity.this.getPackageManager()
+                    .getPackageInfo(LoginActivity.this.getPackageName(), 0);
+            currentVersion = "当前版本:"+packageInfo.versionName;
+        }
+        catch (PackageManager.NameNotFoundException ex){
+            currentVersion="获取当前版本错误:"+ex.getMessage();
+        }
+
+        tvVersion.setText(currentVersion);
         if(!NetWorkUitls.isNetworkConnected(LoginActivity.this)){
             pDialog=new MaterialDialog.Builder(this)
                     .content("当前网络不可用")

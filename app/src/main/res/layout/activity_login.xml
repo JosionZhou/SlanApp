@@ -35,7 +35,7 @@
             android:layout_marginTop="10dp"
             android:background="@color/white"/>
         <TextView
-            android:id="@+id/version"
+            android:id="@+id/version2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
