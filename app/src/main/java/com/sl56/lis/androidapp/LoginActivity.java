@@ -183,6 +183,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     PackageInfo packageInfo = LoginActivity.this.getPackageManager()
                             .getPackageInfo(LoginActivity.this.getPackageName(), 0);
                     String currentVersion = packageInfo.versionName;
+                    Global.setCurrentVersion(currentVersion);
                     //比较版本，-1：当前版本比服务端版本小 0：当前版本与服务端版本一致 1：当前版本比服务端版本大
                     int result = compareVersion(currentVersion,serverVersion);
                     isUpdate=(result==-1);

@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -351,6 +352,16 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             @Override
             public void onNext(JSONObject jsonObject) {
                 try {
+                    if(!jsonObject.getString("Message").isEmpty()) {
+                        VibratorHelper.shock(PalletActivity.this);
+                        new MaterialDialog.Builder(PalletActivity.this)
+                                .positiveText("确定")
+                                .title("操作失败")
+                                .content(jsonObject.getString("Message"))
+                                .cancelable(false)
+                                .show();
+                        return;
+                    }
                     JSONArray array = jsonObject.getJSONArray("PostGroupms");
                     for(int i =0;i<array.length();i++){
                         bindingStationList.put(array.getJSONObject(i).getString("PostGroupName"),array.getJSONObject(i).getInt("PostGroupId"));
@@ -784,7 +795,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             }
         }
     }
-    private class PalletTask extends AsyncTask<Void,Void,Boolean>{
+    private class PalletTask extends AsyncTask<Void,Void,AbstractMap.SimpleEntry<Boolean,String>>{
 
         JSONObject params;
         String action;
@@ -793,9 +804,12 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             this.action=action;
         }
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        protected AbstractMap.SimpleEntry<Boolean,String> doInBackground(Void... voids) {
             JSONObject result = HttpHelper.getJSONObjectFromUrl(action,params);
             try {
+                if(!result.getString("Message").isEmpty()){
+                    return new AbstractMap.SimpleEntry<Boolean, String>(false,result.getString("Message"));
+                }
                 JSONArray categories = result.getJSONArray("Categories");
                 for (int i=0;i<categories.length();i++){
                     palletCategories.add(new AbstractMap.SimpleEntry(categories.getJSONObject(i).getString("Value"),categories.getJSONObject(i).getInt("Key")));
@@ -803,12 +817,12 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return true;
+            return new AbstractMap.SimpleEntry<Boolean, String>(true,"");
         }
 
         @Override
-        protected void onPostExecute(Boolean isSuccess) {
-            if(isSuccess) {
+        protected void onPostExecute(AbstractMap.SimpleEntry<Boolean,String> result) {
+            if(result.getKey()) {
                 ArrayList<String> list = new ArrayList<>();
                 for (Map.Entry<String, Integer> item : palletCategories) {
                     list.add(item.getKey());
@@ -816,6 +830,14 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 palletCategoriesspinner.setItems(list.toArray(new String[0]));
                 //获取打板类别时，默认选中第一个打板类别
                 palletCategoryId = palletCategories.get(0).getValue();
+            }else{
+                VibratorHelper.shock(PalletActivity.this);
+                new MaterialDialog.Builder(PalletActivity.this)
+                        .positiveText("确定")
+                        .title("操作失败")
+                        .content(result.getValue())
+                        .cancelable(false)
+                        .show();
             }
         }
     }

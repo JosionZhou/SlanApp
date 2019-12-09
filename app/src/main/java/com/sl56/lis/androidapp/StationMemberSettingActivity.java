@@ -233,6 +233,16 @@ public class StationMemberSettingActivity extends AppCompatActivity {
             @Override
             public void call(JSONObject jsonObject) {
                 try {
+                    if(!jsonObject.getString("Message").isEmpty()) {
+                        VibratorHelper.shock(StationMemberSettingActivity.this);
+                        new MaterialDialog.Builder(StationMemberSettingActivity.this)
+                                .positiveText("确定")
+                                .title("操作失败")
+                                .content(jsonObject.getString("Message"))
+                                .cancelable(false)
+                                .show();
+                        return;
+                    }
                     stationList=jsonObject.getJSONArray("PostGroupms");
                     ArrayList<String> data = new ArrayList<String>();
                     for(int i=0;i<stationList.length();i++) {

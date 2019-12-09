@@ -19,9 +19,19 @@ public class Global {
 
     public static void setHeader(JSONObject header) throws JSONException {
         header.put("Platform","Android");
+        header.put("Version",getCurrentVersion());
         Header = header;
     }
 
+    public static String getCurrentVersion() {
+        return CurrentVersion;
+    }
+
+    public static void setCurrentVersion(String currentVersion) {
+        CurrentVersion = currentVersion;
+    }
+
+    private static String CurrentVersion;
     private static JSONObject Header;
     private static List<Map.Entry<String,Integer>> CompanyList;
     public static List<Map.Entry<String,Integer>> getCompanyList(){return CompanyList;};
