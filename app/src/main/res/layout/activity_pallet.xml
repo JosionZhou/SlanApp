@@ -16,7 +16,7 @@
         android:background="@drawable/checkgoods_referencenumber"
         android:hint="请输入单号"
         android:singleLine="true"
-        android:text="JJD014600007066821482" />
+        android:text="JJD014600007655625254" />
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
@@ -89,6 +89,29 @@
             android:layout_height="wrap_content"
             android:text="电池"
             android:textSize="25dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="horizontal">
+
+        <com.bigmercu.cBox.CheckBox
+            android:id="@+id/cb_epm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            app:color_after="@color/checkboxbordercolor"
+            app:color_before="@color/red" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="防疫物资"
+            android:textSize="25dp" />
+
+
     </LinearLayout>
     <TextView
         android:id="@+id/tv_pieceinfo"
