@@ -65,8 +65,8 @@ public class HttpHelper {
     * 推荐使用HttpURLConnection来进行网络通信
     * */
     private static String execPost(String action, JSONObject data) {
-//        String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
-        String urlString="http://192.168.0.58:8011/MobileServiceV2.svc/http/"+action;
+        String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
+        //String urlString="http://192.168.0.58:8011/MobileServiceV2.svc/http/"+action;
         StringBuilder sb=new StringBuilder();
         URL url=null;
         HttpURLConnection conn = null ;
@@ -107,8 +107,8 @@ public class HttpHelper {
 
 
     static JSONObject getVersion() throws Exception {
-        String urlString = "http://192.168.0.58:8070/Update.ashx?Action=CheckVersion&AppKey=Android";
-//        String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
+       // String urlString = "http://192.168.0.58:8070/Update.ashx?Action=CheckVersion&AppKey=Android";
+        String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");// 提交模式
@@ -121,8 +121,8 @@ public class HttpHelper {
         return new JSONObject(result);
     }
     static InputStream getUpdateFile(String fileName) throws Exception {
-        String urlString = "http://192.168.0.58:8070/Update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
-//       String urlString = "http://update2.sl56.com/update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
+        //String urlString = "http://192.168.0.58:8070/Update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
+        String urlString = "http://update2.sl56.com/update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");// 提交模式
