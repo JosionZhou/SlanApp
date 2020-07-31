@@ -7,7 +7,8 @@
     <string name="stationsetting">岗位设置</string>
     <string name="text_slan_action_checkgoods">查货</string>
     <string name="text_slan_action_printlabel">打印</string>
-    <string name="text_slan_action_pallet">打板</string>
+    <string name="text_slan_action_pallet">打板扫描</string>
+    <string name="text_slan_action_palletized">打印板号</string>
     <string name="text_slan_action_qingcang">清仓</string>
     <string name="text_slan_action_setting">设置</string>
     <string name="text_slan_action_tosite">操作点出货</string>

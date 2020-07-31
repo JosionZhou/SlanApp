@@ -26,6 +26,7 @@ public class BuilderManager {
             R.string.text_slan_action_checkgoods,
             R.string.text_slan_action_printlabel,
             R.string.text_slan_action_pallet,
+            R.string.text_slan_action_palletized,
             R.string.text_slan_action_qingcang,
             R.string.text_slan_action_archivescan,
             R.string.text_slan_action_tosite,

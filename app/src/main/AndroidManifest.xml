@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sl56.lis.androidapp">
-
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
@@ -22,6 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="icon, label">
+        <activity
+            android:name=".PalletizedActivity"
+            android:label="打印板号"></activity>
         <activity android:name=".MainActivity" />
         <activity
             android:name=".LoginActivity"
@@ -64,7 +66,7 @@
             android:label="@string/text_add_hscode" />
         <activity
             android:name=".ArchiveScanActivity"
-            android:label="@string/text_slan_action_archivescan"/>
+            android:label="@string/text_slan_action_archivescan" />
     </application>
 
 </manifest>

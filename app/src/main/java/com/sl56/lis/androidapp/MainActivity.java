@@ -58,9 +58,12 @@ public class MainActivity extends AppCompatActivity {
                         it = new Intent(MainActivity.this,PalletActivity.class);
                         break;
                     case 3:
-                        it = new Intent(MainActivity.this,ClearanceActivity.class);
+                        it = new Intent(MainActivity.this,PalletizedActivity.class);
                         break;
                     case 4:
+                        it = new Intent(MainActivity.this,ClearanceActivity.class);
+                        break;
+                    case 5:
                         it= new Intent(MainActivity.this,ArchiveScanActivity.class);
                         break;
                     default:return;
