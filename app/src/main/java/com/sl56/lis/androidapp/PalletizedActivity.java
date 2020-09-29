@@ -54,6 +54,12 @@ public class PalletizedActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_palletized);
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+
+        // 是否显示应用程序图标，默认为true
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        // 是否显示应用程序标题，默认为true
+        actionBar.setDisplayShowTitleEnabled(true);
 
         //region 在视图中查找控件
         startDate = (EditText) findViewById(R.id.editTextDate1);
@@ -80,6 +86,7 @@ public class PalletizedActivity extends AppCompatActivity {
         //endregion
 
     }
+
 
     //region 获取打板数据
     private void GetPalletList() {
@@ -244,6 +251,9 @@ public class PalletizedActivity extends AppCompatActivity {
                 else{
                     ShowTagDialog();
                 }
+                break;
+            case android.R.id.home:
+                finish();
                 break;
         }
         return true;

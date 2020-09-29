@@ -29,8 +29,7 @@ public class BuilderManager {
             R.string.text_slan_action_palletized,
             R.string.text_slan_action_qingcang,
             R.string.text_slan_action_archivescan,
-            R.string.text_slan_action_tosite,
-            R.string.text_slan_action_fromsite,
+            R.string.text_slan_action_remove_pallet,
             R.string.groupmember,
             R.string.exit
     };
@@ -38,10 +37,10 @@ public class BuilderManager {
             R.string.text_slan_action_chahuo_sub,
             R.string.text_slan_action_dayin_sub,
             R.string.text_slan_action_daban_sub,
+            R.string.text_slan_action_palletized_sub,
             R.string.text_slan_action_qingcang_sub,
             R.string.text_slan_action_archivescan,
-            R.string.text_slan_action_tosite_sub,
-            R.string.text_slan_action_fromsite_sub,
+            R.string.text_slan_action_remove_pallet_sub,
             R.string.groupmember_sub,
             R.string.exit_sub
     };

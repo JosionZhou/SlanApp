@@ -14,6 +14,7 @@
     <string name="text_slan_action_tosite">操作点出货</string>
     <string name="text_slan_action_fromsite">操作点接货</string>
     <string name="text_slan_action_archivescan">扫描底单</string>
+    <string name="text_slan_action_remove_pallet">拆板</string>
     <string name="text_slan_activity_hscode">海关编码</string>
     <string name="text_add_hscode">添加海关编码</string>
     <string name="exit">退出</string>
@@ -22,11 +23,11 @@
     <string name="text_slan_action_chahuo_sub">严查各种违禁品</string>
     <string name="text_slan_action_dayin_sub">打印Label</string>
     <string name="text_slan_action_daban_sub">货物打板</string>
+    <string name="text_slan_action_palletized_sub">打印物理板号标签</string>
     <string name="text_slan_action_qingcang_sub">清点仓库货物</string>
     <string name="text_slan_action_archivescan_sub">扫描底单</string>
     <string name="text_slan_action_setting_sub">设置岗位和打板绑定</string>
-    <string name="text_slan_action_tosite_sub">出货到分公司扫描</string>
-    <string name="text_slan_action_fromsite_sub">接收分公司的货</string>
+    <string name="text_slan_action_remove_pallet_sub">拆板操作</string>
     <string name="exit_sub">退出当前程序</string>
     <string name="about_sub">系统说明</string>
     <string name="groupmember_sub">岗位成员设置</string>

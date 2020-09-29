@@ -63,9 +63,7 @@ public class MainActivity extends AppCompatActivity {
                     case 4:
                         it = new Intent(MainActivity.this,ClearanceActivity.class);
                         break;
-                    case 5:
-                        it= new Intent(MainActivity.this,ArchiveScanActivity.class);
-                        break;
+
                     default:return;
                 }
                 if(it!=null)
@@ -104,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
                 Intent it =null;
                 switch(index){
                     case 0:
-                        it = new Intent(MainActivity.this,ToSiteActivity.class);
+                        it = new Intent(MainActivity.this,ArchiveScanActivity.class);
                         break;
                     case 1:
-                        it = new Intent(MainActivity.this,FromSiteActivity.class);
+                        it = new Intent(MainActivity.this,RemovePallet.class);
                         break;
                     case 2:
                         it = new Intent(MainActivity.this,StationMemberSettingActivity.class);
