@@ -52,16 +52,17 @@ public class MainActivity extends AppCompatActivity {
                         it = new Intent(MainActivity.this,CheckGoodsActivity.class);
                         break;
                     case 1:
-                        it = new Intent(MainActivity.this,PrintLabelActivity.class);
+                        it = new Intent(MainActivity.this,PutawayActivity.class);
                         break;
                     case 2:
-                        it = new Intent(MainActivity.this,PalletActivity.class);
+                        it = new Intent(MainActivity.this,PrintLabelActivity.class);
                         break;
                     case 3:
-                        it = new Intent(MainActivity.this,PalletizedActivity.class);
+                        it = new Intent(MainActivity.this,PalletActivity.class);
                         break;
                     case 4:
-                        it = new Intent(MainActivity.this,ClearanceActivity.class);
+                        it = new Intent(MainActivity.this,PalletizedActivity.class);
+
                         break;
 
                     default:return;
@@ -102,15 +103,21 @@ public class MainActivity extends AppCompatActivity {
                 Intent it =null;
                 switch(index){
                     case 0:
-                        it = new Intent(MainActivity.this,ArchiveScanActivity.class);
+                        it = new Intent(MainActivity.this,ClearanceActivity.class);
+
                         break;
                     case 1:
-                        it = new Intent(MainActivity.this,RemovePallet.class);
+                        it = new Intent(MainActivity.this,ArchiveScanActivity.class);
+
                         break;
                     case 2:
-                        it = new Intent(MainActivity.this,StationMemberSettingActivity.class);
+                        it = new Intent(MainActivity.this,RemovePallet.class);
+
                         break;
                     case 3:
+                        it = new Intent(MainActivity.this,StationMemberSettingActivity.class);
+                        break;
+                    case 4:
                         System.exit(0);
                         break;
                 }
@@ -144,8 +151,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         rightBmb.setButtonEnum(ButtonEnum.Ham);
-        rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
-        rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);
+        rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_5);
+        rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_5);
         leftBmb.setButtonEnum(ButtonEnum.Ham);
         leftBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_5);
         leftBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_5);

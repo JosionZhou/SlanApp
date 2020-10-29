@@ -24,6 +24,7 @@ public class BuilderManager {
     };
     private static int[] textResources=new int[]{
             R.string.text_slan_action_checkgoods,
+            R.string.text_slan_action_putaway,
             R.string.text_slan_action_printlabel,
             R.string.text_slan_action_pallet,
             R.string.text_slan_action_palletized,

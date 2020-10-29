@@ -6,6 +6,7 @@
     <string name="printlabel">打印Label</string>
     <string name="stationsetting">岗位设置</string>
     <string name="text_slan_action_checkgoods">查货</string>
+    <string name="text_slan_action_putaway">码货</string>
     <string name="text_slan_action_printlabel">打印</string>
     <string name="text_slan_action_pallet">打板扫描</string>
     <string name="text_slan_action_palletized">打印板号</string>
@@ -47,4 +48,7 @@
     <string name="serviceaddress">http://192.168.0.20:8011</string>
     <!--<string name="updateaddress">http://update2.sl56.com</string>-->
     <string name="updateaddress">http://192.168.0.20:8070</string>
+    <string name="title_activity_putaway">PutawayActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
 </resources>
