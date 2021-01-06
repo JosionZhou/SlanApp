@@ -10,9 +10,11 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -183,9 +185,83 @@ public class PrintLabelActivity extends AppCompatActivity {
             list.add(new AbstractMap.SimpleEntry("PI970："+(result.getBoolean("IsPI970")?"是":"否"),result.getBoolean("IsPI970")));
             list.add(new AbstractMap.SimpleEntry("干电池："+(result.getBoolean("IsDryBattery")?"是":"否"),result.getBoolean("IsDryBattery")));
         }
+        list.add(new AbstractMap.SimpleEntry("添加问题件:单号不一致",false));
         ExtendAdapter ad = new ExtendAdapter(this,list);
         ListView lv = (ListView)findViewById(R.id.list);
         lv.setAdapter(ad);
+        try {
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if(position==parent.getCount()-1){
+                        new MaterialDialog.Builder(PrintLabelActivity.this)
+                                .title("确定要添加问题件吗？")
+                                .negativeText("取消")
+                                .positiveText("确定")
+                                .cancelable(true)
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog md, @NonNull DialogAction which) {
+                                        dialog = new MaterialDialog.Builder(PrintLabelActivity.this)
+                                                .title("正在添加问题")
+                                                .cancelable(false)
+                                                .progress(true,0)
+                                                .show();
+                                        Observable.create(new Observable.OnSubscribe<JSONObject>() {
+                                            @Override
+                                            public void call(Subscriber<? super JSONObject> subscriber) {
+                                                JSONObject params = new JSONObject();
+                                                try {
+                                                    params.put("tdId",transportDocumentId);
+                                                    params.put("problemDefinitionId",202);
+                                                    params.put("remark","Android端Label打印时添加");
+                                                    params.put("header",Global.getHeader());
+                                                    subscriber.onNext(HttpHelper.getJSONObjectFromUrl("AddProblem",params));
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        })
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new Action1<JSONObject>() {
+                                            @Override
+                                            public void call(JSONObject jsonObject) {
+                                                dialog.dismiss();
+                                                try {
+                                                    if (jsonObject.getBoolean("Success")) {
+                                                        new MaterialDialog.Builder(PrintLabelActivity.this)
+                                                                .title("操作成功")
+                                                                .cancelable(false)
+                                                                .positiveText("确定")
+                                                                .show();
+                                                    }else{
+                                                        new MaterialDialog.Builder(PrintLabelActivity.this)
+                                                                .title("操作失败")
+                                                                .content(jsonObject.getString("Message"))
+                                                                .cancelable(false)
+                                                                .positiveText("确定")
+                                                                .show();
+                                                    }
+                                                }catch(Exception ex){
+                                                    new MaterialDialog.Builder(PrintLabelActivity.this)
+                                                            .title("操作异常")
+                                                            .content(ex.getMessage())
+                                                            .cancelable(false)
+                                                            .positiveText("确定")
+                                                            .show();
+                                                }
+                                            }
+                                        });
+                                    }
+                                })
+                                .show();
+                    }
+                }
+            });
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
     private ArrayList getCommonInfos() throws JSONException {
         ArrayList<Map.Entry<String,Boolean>> list = new ArrayList<>();
