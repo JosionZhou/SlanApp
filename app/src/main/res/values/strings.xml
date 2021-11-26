@@ -22,6 +22,7 @@
     <string name="about">关于</string>
     <string name="groupmember">组成员</string>
     <string name="text_slan_action_chahuo_sub">严查各种违禁品</string>
+    <string name="text_slan_action_putaway_sub">货物上架摆放</string>
     <string name="text_slan_action_dayin_sub">打印Label</string>
     <string name="text_slan_action_daban_sub">货物打板</string>
     <string name="text_slan_action_palletized_sub">打印物理板号标签</string>

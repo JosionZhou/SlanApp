@@ -36,6 +36,7 @@ public class BuilderManager {
     };
     private static int[] subTextResources=new int[]{
             R.string.text_slan_action_chahuo_sub,
+            R.string.text_slan_action_putaway_sub,
             R.string.text_slan_action_dayin_sub,
             R.string.text_slan_action_daban_sub,
             R.string.text_slan_action_palletized_sub,
