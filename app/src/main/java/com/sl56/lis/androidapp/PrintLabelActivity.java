@@ -10,12 +10,9 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -27,13 +24,11 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Attr;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
@@ -54,6 +49,8 @@ public class PrintLabelActivity extends AppCompatActivity {
     //制单附件信息
     private HashMap<String,String> attachments = null;
     private boolean isProgressDialogShowing =false;
+    //是正在扫描，为true时，若再次触发回车键事件，直接返回
+    private boolean isPrintScaning =false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +63,9 @@ public class PrintLabelActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                    if(isPrintScaning)
+                        return false;
+                    isPrintScaning=true;
                     printLabelScan();
                     return true;
                 }
@@ -291,6 +291,7 @@ public class PrintLabelActivity extends AppCompatActivity {
     private void checkIsPrinted() throws JSONException {
         Boolean isPrinted = result.getBoolean("IsPrint");
         if(isPrinted){
+
             new MaterialDialog.Builder(this)
                     .title("该票已打印")
                     .content("重复打印需要输入密码")
@@ -425,15 +426,20 @@ public class PrintLabelActivity extends AppCompatActivity {
                     errorMessage = result.getString("ErrorMessage");
                     return false;
                 }
-                transportDocumentId = result.getInt("TransportDocumentId");
-                JSONArray atts = result.getJSONArray("Attachments");
-                if(atts!=null) {
-                    for(int i=0;i<atts.length();i++){
-                        attachments.put(atts.getJSONObject(i).getString("Key"),atts.getJSONObject(i).getString("Value"));
+                if(result.has("TransportDocumentId"))
+                    transportDocumentId = result.getInt("TransportDocumentId");
+                if(result.has("Attachments")) {
+                    JSONArray atts = result.getJSONArray("Attachments");
+                    if (atts != null) {
+                        for (int i = 0; i < atts.length(); i++) {
+                            attachments.put(atts.getJSONObject(i).getString("Key"), atts.getJSONObject(i).getString("Value"));
+                        }
                     }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+            }finally {
+                isPrintScaning =false;
             }
             return true;
         }
