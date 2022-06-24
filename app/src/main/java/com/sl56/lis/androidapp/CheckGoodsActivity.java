@@ -2,22 +2,30 @@ package com.sl56.lis.androidapp;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Debug;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.DigitsKeyListener;
+import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +44,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,6 +85,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private String lastChanged;
     Subscriber<JSONObject> subscriber;
     Subscriber<Boolean> subscriberFailDialog;
+    private Button btnCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,13 +128,129 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 checkGoodsScan();
             }
         });
+        btnCamera=(Button) findViewById(R.id.btn_camera);
+        btnCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM+File.separator+"camera").getAbsoluteFile();
+                deleteDirWihtFile(dcimDir);
+                if (receiveGoodsDetailId == 0) {
+                    dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
+                            .title("请先查货")
+                            .content("先查货再拍照上传")
+                            .positiveText("确定")
+                            .show();
+                }
+                else{
+                    dispatchTakePictureIntent();
+                }
 
 
+            }
+        });
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         // 是否显示应用程序图标，默认为true
         actionBar.setDisplayHomeAsUpEnabled(true);
         // 是否显示应用程序标题，默认为true
         actionBar.setDisplayShowTitleEnabled(true);
+    }
+
+
+    private void dispatchTakePictureIntent() {
+        String fileName = getPhotoFileName() + ".jpg";
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        currentPhotoPath=path+fileName;
+        Uri photoURI = FileProvider.getUriForFile(this,
+                "com.sl56.lis.androidapp.fileprovider",
+                new File(currentPhotoPath));
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+        startActivityForResult(intent, 1);
+    }
+
+    String currentPhotoPath="";
+
+    public void deleteDirWihtFile(File dir) {
+        if (dir == null || !dir.exists() || !dir.isDirectory())
+            return;
+        for (File file : dir.listFiles()) {
+            if (file.isFile())
+                file.delete();
+            else if (file.isDirectory())
+                deleteDirWihtFile(file);
+        }
+        dir.delete();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+
+
+        try {
+            final String base64 = encodeBase64File(currentPhotoPath);
+            Observable.create(new Observable.OnSubscribe<JSONObject>() {
+                        @Override
+                        public void call(Subscriber<? super JSONObject> subscriber) {
+                            try {
+                                JSONObject jsonParams = new JSONObject();
+                                jsonParams.put("Name", currentPhotoPath);
+                                jsonParams.put("Content", base64);
+                                jsonParams.put("ReceiveGoodsDetailId",receiveGoodsDetailId);
+                                jsonParams.put("CreateBy",Global.getHeader().getInt("UserId"));
+                                //jsonParams.put("Content", "aasdfasdf");
+                                subscriber.onNext(HttpHelper.getJSONObjectFromUrl1("InspectionUpload", jsonParams));
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<JSONObject>() {
+                        @Override
+                        public void call(JSONObject jsonObject) {
+                            boolean success= false;
+                            String message="";
+                            try {
+                                success = jsonObject.getBoolean("Success");
+                                message=jsonObject.getString("Message");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            if(success==false) {
+                                new MaterialDialog.Builder(CheckGoodsActivity.this)
+                                        .title("失败")
+                                        .content("上传失败，请再次拍照重试,如果多次失败请联系系统管理员.错误信息:"+message)
+                                        .positiveText("确定")
+                                        .show();
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private String path = Environment.getExternalStorageDirectory() +
+            File.separator + Environment.DIRECTORY_DCIM + File.separator+"camera"+File.separator;
+    private String getPhotoFileName() {
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        return "IMG_" + dateFormat.format(date);
+    }
+    public  String encodeBase64File(String path) throws Exception {
+        File  file = new File(path);
+        FileInputStream inputFile = new FileInputStream(file);
+        byte[] buffer = new byte[(int)file.length()];
+        inputFile.read(buffer);
+        inputFile.close();
+        file.delete();
+        return Base64.encodeToString(buffer,Base64.NO_WRAP);
     }
 
     @Override

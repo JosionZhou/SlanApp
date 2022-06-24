@@ -6,6 +6,7 @@
     <string name="printlabel">打印Label</string>
     <string name="stationsetting">岗位设置</string>
     <string name="text_slan_action_checkgoods">查货</string>
+    <string name="text_slan_action_checkgoods_camera">拍照</string>
     <string name="text_slan_action_putaway">码货</string>
     <string name="text_slan_action_printlabel">打印</string>
     <string name="text_slan_action_pallet">打板扫描</string>

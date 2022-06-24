@@ -1,5 +1,6 @@
 package com.sl56.lis.androidapp;
 
+import android.os.Environment;
 import android.renderscript.Sampler;
 
 import org.apache.http.HttpConnection;
@@ -35,6 +36,13 @@ public class HttpHelper {
 
     public  static JSONObject getJSONObjectFromUrl(String action, JSONObject data){
         String responseContent=execPost(action,data);
+        return doGetJSONObjectFromUrl(action,data,responseContent);
+    }
+    public  static JSONObject getJSONObjectFromUrl1(String action, JSONObject data){
+        String responseContent=execPost1(action,data);
+        return doGetJSONObjectFromUrl(action,data,responseContent);
+    }
+    private   static JSONObject doGetJSONObjectFromUrl(String action, JSONObject data,String responseContent){
         if(responseContent==null || responseContent.trim().isEmpty())return null;
         JSONObject res= null;
         try {
@@ -66,7 +74,15 @@ public class HttpHelper {
     * */
     private static String execPost(String action, JSONObject data) {
         String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
-        //String urlString="http://192.168.0.58:8011/MobileServiceV2.svc/http/"+action;
+        //String urlString="http://192.168.0.240:8011/MobileServiceV2.svc/http/"+action;
+        return doExecPost(urlString,action,data);
+    }
+    private static String execPost1(String action, JSONObject data) {
+        //String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
+        String urlString="https://api.sl56.com/api/tool/Android";
+        return doExecPost(urlString,action,data);
+    }
+    private static String doExecPost(String urlString,String action, JSONObject data) {
         StringBuilder sb=new StringBuilder();
         URL url=null;
         HttpURLConnection conn = null ;
