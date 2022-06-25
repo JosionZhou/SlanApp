@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -290,7 +291,11 @@ public class ScrollViewFragment extends Fragment {
                     while (m.find()) {
                         count ++;
                     }
-                    int width = (55-(text.length()-1)*2)*count+(text.length()-count)*20;
+                    int ver= Build.VERSION.SDK_INT;
+                    int charWidth=20;
+                    if(ver>=30)
+                        charWidth=25;
+                    int width = (55-(text.length()-1)*2)*count+(text.length()-count)*charWidth;
                     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width,50);
                     v.setLayoutParams(params);
                 }catch(Exception e){

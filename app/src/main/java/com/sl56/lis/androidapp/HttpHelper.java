@@ -78,8 +78,8 @@ public class HttpHelper {
         return doExecPost(urlString,action,data);
     }
     private static String execPost1(String action, JSONObject data) {
-        //String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
         String urlString="https://api.sl56.com/api/tool/Android";
+        //String urlString="http://192.168.0.240:8033/api/tool/Android";
         return doExecPost(urlString,action,data);
     }
     private static String doExecPost(String urlString,String action, JSONObject data) {
