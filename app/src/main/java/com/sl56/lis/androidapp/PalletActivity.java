@@ -62,6 +62,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private MaterialSpinner palletnospinner;
     private EditText etBarCode;
     private int palletId=0;
+    private int receiveGoodsDetailSizeId=0;
     private String palletNo;
     private Integer bindStationId = null;
     private Integer tempBindStationId=null;
@@ -599,6 +600,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     params.put("isBattery",cbBattery.isChecked());
                     params.put("isEPM",cbEPM.isChecked());
                     params.put("bindStationId",bindStationId);
+                    params.put("receiveGoodsDetailSizeId",receiveGoodsDetailSizeId);
                     params.put("header",Global.getHeader());
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -654,6 +656,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                                 palletnospinner.setItems(palletNoList);
                             }
                         }
+                        receiveGoodsDetailSizeId=0;
                         etBarCode.selectAll();
                         enableScanner();
                     }
@@ -665,6 +668,99 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
 
             }
         });
+    }
+    private void pallet1(){
+        etBarCode.selectAll();
+        String alertMsg;
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this);
+        builder.title("扫描失败").positiveText("确定");
+        final String no = etBarCode.getText().toString().trim();
+
+
+        if(bindStationId==null){
+            VibratorHelper.shock(this);
+            builder.content("请设置语音提示岗位")
+                    .positiveText("确定")
+                    .canceledOnTouchOutside(false)//点击外部不取消对话框
+                    .onAny(new MaterialDialog.SingleButtonCallback(){
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            if (which == DialogAction.POSITIVE) {
+                                enableScanner();
+                                etBarCode.setFocusable(true);
+                                etBarCode.selectAll();
+                            }
+                        }
+                    })
+                    .show();
+
+            return;
+        }
+
+        etBarCode.setText(no);
+
+
+        Observable.create(new Observable.OnSubscribe<JSONObject>() {
+                    @Override
+                    public void call(Subscriber<? super JSONObject> subscriber) {
+                        JSONObject params = new JSONObject();
+                        currentPalletCategoryId=palletCategories.get(palletCategoriesspinner.getSelectedIndex()).getValue();
+                        try {
+                            params.put("packageNumber",etBarCode.getText().toString());
+                            params.put("bindStationId",bindStationId);
+                            params.put("header",Global.getHeader());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        subscriber.onNext(HttpHelper.getJSONObjectFromUrl("PalletScan1",params));
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<JSONObject>() {
+                    @Override
+                    public void call(JSONObject jsonObject) {
+                        try {
+                            //progressDialog.dismiss();
+                            Boolean success = jsonObject.getBoolean("Success");
+
+                            if(success==false) {
+                                String message = jsonObject.getString("Message");
+                                receiveGoodsDetailSizeId=0;
+                                VibratorHelper.shock(PalletActivity.this);
+                                new MaterialDialog.Builder(PalletActivity.this)
+                                        .positiveText("确定")
+                                        .canceledOnTouchOutside(false)//点击外部不取消对话框
+                                        .title("操作失败")
+                                        .content(message)
+                                        .onAny(new MaterialDialog.SingleButtonCallback(){
+                                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                                if (which == DialogAction.POSITIVE) {
+                                                    enableScanner();
+                                                    etBarCode.selectAll();
+                                                }
+                                            }
+
+                                        })
+                                        .show();
+
+
+                            }else{
+                                receiveGoodsDetailSizeId=jsonObject.getInt("ReceiveGoodsDetailSizeId");
+
+
+                            }
+                            etBarCode.selectAll();
+                            enableScanner();
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            etBarCode.selectAll();
+                            enableScanner();
+                        }
+
+                    }
+                });
     }
     private void enableScanner(){
         etBarCode.setEnabled(true);
@@ -796,7 +892,15 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     scanner.unlockScanKey();
                     etBarCode.setEnabled(false);
                     etBarCode.setText(scanResult);
-                    pallet();
+                    //内部子单号
+                    if(scanResult.endsWith("-SL")){
+                        pallet1();
+                    }
+                    //外部单号
+                    else{
+                        pallet();
+                    }
+
                 }else{
                     //scanner.resultScan();
                    //
