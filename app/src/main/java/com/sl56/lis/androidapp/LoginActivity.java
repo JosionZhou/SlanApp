@@ -1,5 +1,7 @@
 package com.sl56.lis.androidapp;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -14,11 +16,13 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -40,13 +44,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -76,15 +76,23 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private List<Map.Entry<String,Integer>> sites;
     private  TextView tvVersion;
     private final String SDPATH = Environment.getExternalStorageDirectory() + "/";
+    private static final int REQUEST_CODE = 1024;
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
+        //android11以上版本，更新安装需要请求权限
+        requestPermission();
         TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         TextView tv = (TextView) this.findViewById(R.id.device_id);
         tvVersion=(TextView)this.findViewById(R.id.version2) ;
-        deviceId=tm.getDeviceId();
+        try {
+            deviceId = tm.getDeviceId();
+        }catch(Exception ex){
+            deviceId=Settings.System.getString(this.getContentResolver(),Settings.Secure.ANDROID_ID);
+        }
         tv.setText("设备ID：" + deviceId);
         String currentVersion = "";
         try{
@@ -275,6 +283,17 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
     }
 
+    private void requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // 没有权限则跳转到授权设置界面
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + LoginActivity.this.getPackageName()));
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        }
+    }
+
     /**
      * 安装apk
      * @param file
@@ -282,7 +301,17 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private void installApk(File file) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        Uri uri=null;
+        //android7以上使用provider进行apk安装
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            //记得修改com.xxx.fileprovider与androidmanifest相同
+            uri = FileProvider.getUriForFile(LoginActivity.this,"com.sl56.lis.androidapp.fileprovider",file);
+            intent.setDataAndType(uri,"application/vnd.android.package-archive");
+        }else{
+            uri=Uri.fromFile(file);
+        }
+        intent.setDataAndType(uri, "application/vnd.android.package-archive");
         startActivity(intent);
         android.os.Process.killProcess(android.os.Process.myPid());
     }

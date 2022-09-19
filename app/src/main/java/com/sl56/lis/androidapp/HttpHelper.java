@@ -74,12 +74,12 @@ public class HttpHelper {
     * */
     private static String execPost(String action, JSONObject data) {
         String urlString="http://app2.sl56.com/MobileServiceV2.svc/http/"+action;
-        //String urlString="http://192.168.0.240:8011/MobileServiceV2.svc/http/"+action;
+//        String urlString="http://192.168.0.30:8011/MobileServiceV2.svc/http/"+action;
         return doExecPost(urlString,action,data);
     }
     private static String execPost1(String action, JSONObject data) {
         String urlString="https://api.sl56.com/api/tool/Android";
-        //String urlString="http://192.168.0.240:8033/api/tool/Android";
+//        String urlString="http://192.168.0.30:8033/api/tool/Android";
         return doExecPost(urlString,action,data);
     }
     private static String doExecPost(String urlString,String action, JSONObject data) {
@@ -123,7 +123,7 @@ public class HttpHelper {
 
 
     static JSONObject getVersion() throws Exception {
-       // String urlString = "http://192.168.0.58:8070/Update.ashx?Action=CheckVersion&AppKey=Android";
+//        String urlString = "http://192.168.0.30:8019/Update.ashx?Action=CheckVersion&AppKey=Android";
         String urlString = "http://update2.sl56.com/update.ashx?Action=CheckVersion&AppKey=Android";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -137,7 +137,7 @@ public class HttpHelper {
         return new JSONObject(result);
     }
     static InputStream getUpdateFile(String fileName) throws Exception {
-        //String urlString = "http://192.168.0.58:8070/Update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
+//        String urlString = "http://192.168.0.30:8019/Update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
         String urlString = "http://update2.sl56.com/update.ashx?Action=Download&AppKey=Android&FileName="+fileName;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
