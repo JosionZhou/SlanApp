@@ -101,8 +101,8 @@ public class CheckGoodsActivity extends AppCompatActivity {
         tvCheckInfo = (TextView) findViewById(R.id.tv_checkinfo);
         etReferencenumber = (EditText) findViewById(R.id.etreferencenumber);
         //设置输入框弹出键盘默认为数字键盘
-        String digists = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        etReferencenumber.setKeyListener(DigitsKeyListener.getInstance(digists));
+//        String digists = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//        etReferencenumber.setKeyListener(DigitsKeyListener.getInstance(digists));
         //监听键盘回车键事件
         etReferencenumber.setOnKeyListener(new View.OnKeyListener() {
             @Override

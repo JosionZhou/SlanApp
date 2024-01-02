@@ -16,13 +16,12 @@
         android:background="@drawable/checkgoods_referencenumber"
         android:hint="请输入单号"
         android:singleLine="true"
-        android:text="JJD014600007655625254" />
+        android:text="774635192749" />
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:background="@color/linecolor"/>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal">
@@ -42,17 +41,33 @@
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:background="@drawable/checkgoods_referencenumber"
+            android:enabled="false"
+            android:textSize="20dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+        <com.jaredrummler.materialspinner.MaterialSpinner
+            android:id="@+id/spinner_palletno"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/checkgoods_referencenumber"
+            android:textSize="20dp"
+            android:layout_weight="1"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"/>
+
+        <com.jaredrummler.materialspinner.MaterialSpinner
+            android:id="@+id/spinner_subpalletcategory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:background="@drawable/checkgoods_referencenumber"
+            android:enabled="false"
             android:textSize="20dp" />
     </LinearLayout>
 
-    <com.jaredrummler.materialspinner.MaterialSpinner
-        android:id="@+id/spinner_palletno"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/checkgoods_referencenumber"
-        android:textSize="20dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="2dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -68,51 +83,13 @@
             android:scaleY="1.5"
             app:color_after="@color/checkboxbordercolor"
             app:color_before="@color/red" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="单独报关"
             android:textSize="25dp" />
-
-        <com.bigmercu.cBox.CheckBox
-            android:id="@+id/cb_battery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:scaleX="1.5"
-            android:scaleY="1.5"
-            app:color_after="@color/checkboxbordercolor"
-            app:color_before="@color/red" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="电池"
-            android:textSize="25dp" />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:orientation="horizontal">
 
-        <com.bigmercu.cBox.CheckBox
-            android:id="@+id/cb_epm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleX="1.5"
-            android:scaleY="1.5"
-            app:color_after="@color/checkboxbordercolor"
-            app:color_before="@color/red" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="防疫物资"
-            android:textSize="25dp" />
-
-
-    </LinearLayout>
     <TextView
         android:id="@+id/tv_pieceinfo"
         android:layout_width="match_parent"

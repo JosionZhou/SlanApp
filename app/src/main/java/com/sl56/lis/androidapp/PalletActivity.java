@@ -60,6 +60,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private String errorMsg;
     private MaterialSpinner palletCategoriesspinner;
     private MaterialSpinner palletnospinner;
+    private MaterialSpinner subPalletnospinner;
     private EditText etBarCode;
     private int palletId=0;
     private int receiveGoodsDetailSizeId=0;
@@ -74,10 +75,10 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     //private MaterialDialog progressDialog;
     private List<PalletInfo> palletInfoList = new ArrayList<>();
     private List<String> palletNoList=new ArrayList<>() ;
+    private List<String> subPalletNoList=new ArrayList<>();
     private ListView lvShipments;
     private CheckBox cbCustoms;
-    private CheckBox cbBattery;
-    private CheckBox cbEPM;
+
     private ScannerInterface scanner;
     BroadcastReceiver scanReceiver;
     private DatePickerDialog dpd;
@@ -94,11 +95,14 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         String dateStr =sdf.format(new Date());
         tvDate.setText(dateStr);
         cbCustoms = (CheckBox)findViewById(R.id.cb_customs);
-        cbBattery =(CheckBox)findViewById(R.id.cb_battery);
-        cbEPM=(CheckBox)findViewById(R.id.cb_epm);
+
         lvShipments = (ListView)findViewById(R.id.lv_shipments);
         etBarCode = (EditText)findViewById(R.id.etBarCode);
         etBarCode.selectAll();
+        subPalletNoList.add("请选择");
+        subPalletNoList.add("亚洲");
+        subPalletNoList.add("美洲");
+        subPalletNoList.add("欧洲");
         /*etBarCode.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
@@ -154,6 +158,8 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 setPalletDetails(position);
             }
         });
+        subPalletnospinner= (MaterialSpinner)findViewById(R.id.spinner_subpalletcategory);
+        subPalletnospinner.setItems(subPalletNoList);
         palletCategoriesspinner = (MaterialSpinner) findViewById(R.id.spinner_palletcategory);
         palletCategoriesspinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
 
@@ -218,12 +224,10 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         if(selectObj!=null && selectObj.Id!=-1){
             palletId=selectObj.Id;
             palletNo=selectObj.No;
-            cbBattery.setEnabled(false);
             cbCustoms.setEnabled(false);
-            cbBattery.setChecked(selectObj.IsBattery);
             cbCustoms.setChecked(selectObj.IsCustoms);
-            cbEPM.setChecked(selectObj.IsEPM);
             palletCategoriesspinner.setEnabled(false);
+            subPalletnospinner.setEnabled(false);
             Observable.create(new Observable.OnSubscribe<JSONObject>() {
                 @Override
                 public void call(Subscriber<? super JSONObject> subscriber) {
@@ -256,7 +260,9 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                                         palletCategoriesspinner.setSelectedIndex(idx);
                                     }
                                 }
+                                subPalletnospinner.setText(selectObj.SubPalletCategoryNo);
                                 etBarCode.selectAll();
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -302,18 +308,15 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             case R.id.add:
                 palletId=0;
                 palletCategoriesspinner.setEnabled(true);
-                AddPallte(0,"待生成",0,false,false,true,false);
+                subPalletnospinner.setEnabled(true);
+                AddPallte(0,"待生成",0,false,false,"请选择");
                 if(palletNoList.size()>0){
                     palletnospinner.setItems(palletNoList);
                     palletnospinner.setSelectedIndex(0);
                 }
                 shipments.clear();
-                cbBattery.setEnabled(true);
                 cbCustoms.setEnabled(true);
-                cbEPM.setEnabled(true);
-                cbBattery.setChecked(false);
                 cbCustoms.setChecked(false);
-                cbEPM.setChecked(false);
                 reBindShipmentsListView();
                 break;
             case R.id.groupmember:
@@ -434,8 +437,6 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
 
         }
         cbCustoms.setText("");
-        cbBattery.setText("");
-        cbEPM.setText("");
     }
     //把stationId存入数据库
     private void setStationId() throws Exception{
@@ -474,17 +475,18 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
      * @param value 板No
      * @param palletCategoryId 板类别ID
      * @param isCustomer 是否单独报关
-     * @param isBattery 是否电池板
      */
-    private void AddPallte(int id, String value,int palletCategoryId,Boolean isCustomer,Boolean isBattery,boolean isInsert,boolean isEPM) {
+    private void AddPallte(int id, String value,int palletCategoryId,Boolean isCustomer,boolean isInsert,String subPalletCategoryNo) {
         if(!palletNoList.contains(value)){
             PalletInfo newItem = new PalletInfo();
             newItem.Id = id;
             newItem.No = value;
             newItem.CategoryId = palletCategoryId;
-            newItem.IsBattery = isBattery;
             newItem.IsCustoms = isCustomer;
-            newItem.IsEPM=isEPM;
+            if(subPalletCategoryNo.equals("请选择"))
+                newItem.SubPalletCategoryNo="";
+            else
+                newItem.SubPalletCategoryNo=subPalletCategoryNo;
             if(isInsert){
                 palletInfoList.add(0,newItem);
                 palletNoList.add(0,value);
@@ -592,13 +594,16 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             public void call(Subscriber<? super JSONObject> subscriber) {
                 JSONObject params = new JSONObject();
                 currentPalletCategoryId=palletCategories.get(palletCategoriesspinner.getSelectedIndex()).getValue();
+                String subPalletCategoryNo= subPalletnospinner.getText().toString();
+                if(subPalletCategoryNo.equals("请选择")){
+                    subPalletCategoryNo="";
+                }
                 try {
                     params.put("packageNumber",etBarCode.getText().toString());
                     params.put("palletId",palletId);
                     params.put("palletCategoryId",currentPalletCategoryId);
+                    params.put("subPalletCategoryNo",subPalletCategoryNo);
                     params.put("isCustoms",cbCustoms.isChecked());
-                    params.put("isBattery",cbBattery.isChecked());
-                    params.put("isEPM",cbEPM.isChecked());
                     params.put("bindStationId",bindStationId);
                     params.put("receiveGoodsDetailSizeId",receiveGoodsDetailSizeId);
                     params.put("header",Global.getHeader());
@@ -638,9 +643,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
 
 
                     }else{
-                        cbBattery.setEnabled(false);
                         cbCustoms.setEnabled(false);
-                        cbEPM.setEnabled(false);
                         addItem(etBarCode.getText().toString());
                         String pieceInfo = String.format("共%s件，剩余%s件",jsonObject.getString("TotalPiece"),jsonObject.getString("ResiduePiece"));
                         ((TextView)findViewById(R.id.tv_pieceinfo)).setText(pieceInfo);
@@ -651,7 +654,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                             //移除临时板
                             RemovePallet(0);
                             //将服务端生成的板添加到板列表
-                            AddPallte(palletId, palletNo,currentPalletCategoryId,cbCustoms.isChecked(),cbBattery.isChecked(),true,cbEPM.isChecked());
+                            AddPallte(palletId, palletNo,currentPalletCategoryId,cbCustoms.isChecked(),true,subPalletnospinner.getText().toString());
                             if(palletNoList.size()>0){
                                 palletnospinner.setItems(palletNoList);
                             }
@@ -804,7 +807,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     for(int i =0;i<array.length();i++){
 
                         AddPallte(array.getJSONObject(i).getInt("Id"),array.getJSONObject(i).getString("No"),array.getJSONObject(i).getInt("CategoryId"),
-                                array.getJSONObject(i).getBoolean("IsCustoms"), array.getJSONObject(i).getBoolean("IsBattery"),false, array.getJSONObject(i).getBoolean("IsEPM"));
+                                array.getJSONObject(i).getBoolean("IsCustoms"), false,array.getJSONObject(i).getString("SubPalletCategoryNo"));
 
                     }
                     if(palletNoList.size()>0){
@@ -874,9 +877,8 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         public int Id;
         public String No;
         public int CategoryId;
-        public Boolean IsBattery;
         public Boolean IsCustoms;
-        public Boolean IsEPM;
+        public String SubPalletCategoryNo;
     }
 
     /**
