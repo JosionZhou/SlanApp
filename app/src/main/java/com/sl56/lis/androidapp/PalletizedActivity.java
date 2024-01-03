@@ -125,8 +125,6 @@ public class PalletizedActivity extends AppCompatActivity {
                                 item.Id = array.getJSONObject(i).getInt("Id");
                                 item.No = array.getJSONObject(i).getString("No");
                                 item.IsCustoms = array.getJSONObject(i).getBoolean("IsCustoms");
-                                item.IsBattery = array.getJSONObject(i).getBoolean("IsBattery");
-                                item.IsEPM = array.getJSONObject(i).getBoolean("IsEPM");
                                 palletList.add(item);
                             }
                             adapter = new PalletListAdapter(palletList, PalletizedActivity.this);
