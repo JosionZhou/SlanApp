@@ -93,6 +93,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         }catch(Exception ex){
             deviceId=Settings.System.getString(this.getContentResolver(),Settings.Secure.ANDROID_ID);
         }
+        if(deviceId==null)
+            deviceId=Settings.System.getString(this.getContentResolver(),Settings.Secure.ANDROID_ID);
         tv.setText("设备ID：" + deviceId);
         String currentVersion = "";
         try{
