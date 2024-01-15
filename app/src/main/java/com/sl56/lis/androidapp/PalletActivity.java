@@ -546,6 +546,9 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             case 11://Aramex
                 no=temp;
                 break;
+            case 14:
+                no=temp;
+                break;
             default:
                 VibratorHelper.shock(this);
                 new  MaterialDialog.Builder(this)
