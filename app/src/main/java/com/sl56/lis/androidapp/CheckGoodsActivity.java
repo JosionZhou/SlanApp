@@ -692,6 +692,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             String alertMsg = result.getString("ErrorMessage");
                             throw new Exception(alertMsg);
                         }
+                        etReferencenumber.requestFocus();
                         lastChanged = result.getString("LastChanged");
                         priceRules = result.getJSONArray("PriceRules");
                         otherRules = result.getJSONArray("OhterRules");
