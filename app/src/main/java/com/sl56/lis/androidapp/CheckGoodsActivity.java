@@ -107,7 +107,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
         etReferencenumber.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
                     checkGoodsScan();
                     return true;
                 }
@@ -224,6 +224,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             if(success==false) {
+                                etReferencenumber.requestFocus();
                                 new MaterialDialog.Builder(CheckGoodsActivity.this)
                                         .title("失败")
                                         .content("上传失败，请再次拍照重试,如果多次失败请联系系统管理员.错误信息:"+message)
@@ -325,6 +326,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                                 vpMaind.setVisibility(View.GONE);
                             }
                             else {
+                                etReferencenumber.requestFocus();
                                 new MaterialDialog.Builder(CheckGoodsActivity.this)
                                         .title("保存失败")
                                         .content(jsonObject.getString("ErrorMessage"))
@@ -347,6 +349,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
     private void saveCheckGoods() {
         if (receiveGoodsDetailId == 0) {
             VibratorHelper.shock(CheckGoodsActivity.this);
+            etReferencenumber.requestFocus();
             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                     .title("保存失败")
                     .content("请扫描单号成功后再保存")
@@ -451,6 +454,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable e) {
                 VibratorHelper.shock(CheckGoodsActivity.this);
+                etReferencenumber.requestFocus();
                 new MaterialDialog.Builder(CheckGoodsActivity.this)
                         .title("保存操作失败")
                         .content(e.getMessage())
@@ -467,6 +471,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     if (code == 0) {
                         String errorMessage = result.getString("ErrorMessage");
                         if (errorMessage.equals("当前无适合的成本价")) {
+                            etReferencenumber.requestFocus();
                             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                                     .content("当前无适合的成本价，是否强制保存？")
                                     .cancelable(false)
@@ -499,6 +504,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
 
                 } catch (Exception e) {
                     VibratorHelper.shock(CheckGoodsActivity.this);
+                    etReferencenumber.requestFocus();
                     new MaterialDialog.Builder(CheckGoodsActivity.this)
                             .title("提示")
                             .content(e.getMessage())
@@ -618,6 +624,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 public void onNext(Boolean aBoolean) {
                     VibratorHelper.shock(CheckGoodsActivity.this);
                     dialog.dismiss();
+                    etReferencenumber.requestFocus();
                     dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                             .content("数据获取失败，是否重新获取？")
                             .cancelable(false)
@@ -668,6 +675,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 @Override
                 public void onError(Throwable e) {
                     dialog.dismiss();
+                    etReferencenumber.requestFocus();
                     new MaterialDialog.Builder(CheckGoodsActivity.this)
                             .title("查货扫描失败")
                             .content(e.getMessage())
@@ -684,6 +692,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             String alertMsg = result.getString("ErrorMessage");
                             throw new Exception(alertMsg);
                         }
+                        etReferencenumber.requestFocus();
                         lastChanged = result.getString("LastChanged");
                         priceRules = result.getJSONArray("PriceRules");
                         otherRules = result.getJSONArray("OhterRules");
@@ -710,6 +719,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         //查货扫描时显示选项卡
                         vpMaind.setVisibility(View.VISIBLE);
                         if (!InspectionTips.isEmpty()) {
+                            etReferencenumber.requestFocus();
                             dialog = new MaterialDialog.Builder(CheckGoodsActivity.this)
                                     .title("查货提示")
                                     .content(InspectionTips)
@@ -718,6 +728,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             VibratorHelper.shock(CheckGoodsActivity.this);
                         }
                     } catch (Exception e) {
+                        etReferencenumber.requestFocus();
                         new MaterialDialog.Builder(CheckGoodsActivity.this)
                                 .title("查货扫描失败")
                                 .content(e.getMessage())

@@ -16,6 +16,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Switch;
 
@@ -83,6 +84,7 @@ public class ScrollViewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     }
 
     /**
@@ -284,18 +286,22 @@ public class ScrollViewFragment extends Fragment {
                             }
                         }
                     });
+                    //匹配汉字正则表达式
                     String regEx = "[\\u4e00-\\u9fa5]";
                     Pattern p = Pattern.compile(regEx);
                     Matcher m = p.matcher(text);
+                    //匹配汉字个数
                     int count=0;
                     while (m.find()) {
                         count ++;
                     }
-                    int ver= Build.VERSION.SDK_INT;
-                    int charWidth=20;
-                    if(ver>=30)
-                        charWidth=25;
-                    int width = (55-(text.length()-1)*2)*count+(text.length()-count)*charWidth;
+                    //字母和数字字符宽度
+                    int letterCharWidth=20;
+                    //汉字字符宽度
+                    int cnCharWidth = 35;
+                    //文字宽度=字母/数字宽度+汉字宽度
+                    int width = (text.length()-count)*letterCharWidth + count*cnCharWidth;
+                    width=width+50;//文字的宽度加上复选框的宽度50
                     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width,50);
                     v.setLayoutParams(params);
                 }catch(Exception e){
