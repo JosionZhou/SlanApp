@@ -99,7 +99,7 @@ public class HttpHelper {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setUseCaches(false);
-            conn.setReadTimeout(20*1000);
+            conn.setReadTimeout(40*1000);
             conn.connect();
             OutputStreamWriter outputStreamWriter=null;
             outputStreamWriter=new OutputStreamWriter(conn.getOutputStream());
