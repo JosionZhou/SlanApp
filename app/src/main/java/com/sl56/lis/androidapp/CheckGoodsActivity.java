@@ -557,20 +557,20 @@ public class CheckGoodsActivity extends AppCompatActivity {
                 }
             }
         };
-        Observable.create(new Observable.OnSubscribe<Boolean>() {
-            @Override
-            public void call(Subscriber<? super Boolean> subscriber) {
-                try {
-                    Thread.sleep(10 * 1000);//休眠10秒
-                    subscriber.onNext(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(subscriberFailDialog);
+//        Observable.create(new Observable.OnSubscribe<Boolean>() {
+//            @Override
+//            public void call(Subscriber<? super Boolean> subscriber) {
+//                try {
+//                    Thread.sleep(10 * 1000);//休眠10秒
+//                    subscriber.onNext(true);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        })
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(subscriberFailDialog);
 
 //        task = new CheckGoodsTask("InspectionSave",jsonParams,1);
 //        task.executeOnExecutor(cachedThreadPool);
@@ -639,21 +639,21 @@ public class CheckGoodsActivity extends AppCompatActivity {
                             .show();
                 }
             };
-            //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
-            Observable.create(new Observable.OnSubscribe<Boolean>() {
-                @Override
-                public void call(Subscriber<? super Boolean> subscriber) {
-                    try {
-                        Thread.sleep(1 * 1000);
-                        subscriber.onNext(true);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            })
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe();
+//            //当获取数据的dialog显示时间超过10秒是，认为提交数据失败
+//            Observable.create(new Observable.OnSubscribe<Boolean>() {
+//                @Override
+//                public void call(Subscriber<? super Boolean> subscriber) {
+//                    try {
+//                        Thread.sleep(1 * 1000);
+//                        subscriber.onNext(true);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            })
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe();
 
             //查货扫描网络访问(RXJava方式)
             Observable exeObj = Observable.create(new Observable.OnSubscribe<JSONObject>() {
