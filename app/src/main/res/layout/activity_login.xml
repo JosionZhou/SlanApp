@@ -89,7 +89,7 @@
             android:nextFocusForward="@+id/password"
             android:singleLine="true"
             android:textColorHint="@color/gray"
-            android:textSize="20sp" />
+            android:textSize="20sp"/>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -113,7 +113,7 @@
             android:inputType="textPassword"
             android:maxLines="1"
             android:textColorHint="@color/gray"
-            android:textSize="20sp" />
+            android:textSize="20sp"/>
 
 
             <Button

@@ -165,6 +165,13 @@ public class MainActivity extends AppCompatActivity {
             rightBmb.addBuilder(builder);
         }
 
+        findViewById(R.id.btnScanRgd).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent it = new Intent(MainActivity.this,ScanRGDActivity.class);
+                startActivity(it);
+            }
+        });
 //        rightBmb.setButtonEnum(ButtonEnum.Ham);
 //        rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
 //        rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);

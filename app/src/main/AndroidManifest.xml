@@ -75,6 +75,9 @@
         <activity
             android:name=".ArchiveScanActivity"
             android:label="@string/text_slan_action_archivescan" />
+        <activity
+            android:name=".ScanRGDActivity"
+            android:label="@string/text_slan_scan_rgd" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.sl56.lis.androidapp.fileprovider"

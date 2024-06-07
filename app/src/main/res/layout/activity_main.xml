@@ -10,8 +10,22 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.sl56.lis.androidapp.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TableRow android:layout_height="121dp">
+
+            <Button
+                android:id="@+id/btnScanRgd"
+                android:layout_width="145dp"
+                android:layout_height="60dp"
+                android:text="收货扫描" />
+        </TableRow>
+
+        <TableRow>
+
+        </TableRow>
+
+    </TableLayout>
 </RelativeLayout>
