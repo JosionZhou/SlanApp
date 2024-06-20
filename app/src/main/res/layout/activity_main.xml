@@ -21,6 +21,12 @@
                 android:layout_width="145dp"
                 android:layout_height="60dp"
                 android:text="收货扫描" />
+
+            <Button
+                android:id="@+id/btn_PackagingOptimization"
+                android:layout_width="145dp"
+                android:layout_height="60dp"
+                android:text="包装优化" />
         </TableRow>
 
         <TableRow>
