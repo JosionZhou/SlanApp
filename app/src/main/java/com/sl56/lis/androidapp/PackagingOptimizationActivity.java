@@ -37,7 +37,7 @@ public class PackagingOptimizationActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    PackagingOptimization(1);
+                    PackagingOptimization(0);
                     return true;
                 }
                 return false;
