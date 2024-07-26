@@ -351,8 +351,11 @@ public class PrintLabelActivity extends AppCompatActivity {
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             try {
                                 etReferenceNumber.selectAll();
-                                if(checkTime())
+                                if(checkTime()){
+
                                     doPrint(false);
+                                }
+
                                 else
                                     new MaterialDialog.Builder(PrintLabelActivity.this)
                                             .title("警告")
@@ -375,6 +378,14 @@ public class PrintLabelActivity extends AppCompatActivity {
      * @throws JSONException
      */
     private void doPrint(Boolean isReprint) throws JSONException {
+        boolean isReweigh= result.getBoolean("IsReweigh");
+        if(isReweigh){
+            new MaterialDialog.Builder(PrintLabelActivity.this)
+                    .title("提示")
+                    .content("此票货需要重新过机测重")
+                    .positiveText("确定")
+                    .show();
+        }
         JSONObject params = new JSONObject();
         params.put("transportDocumentId",result.getInt("TransportDocumentId"));
         params.put("transportName",result.getString("ModeOfTransportName"));
