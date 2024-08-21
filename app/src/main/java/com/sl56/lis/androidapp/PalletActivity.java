@@ -78,6 +78,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private List<String> subPalletNoList=new ArrayList<>();
     private ListView lvShipments;
     private CheckBox cbCustoms;
+    private CheckBox cbFedExORD;
 
     private ScannerInterface scanner;
     BroadcastReceiver scanReceiver;
@@ -95,6 +96,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         String dateStr =sdf.format(new Date());
         tvDate.setText(dateStr);
         cbCustoms = (CheckBox)findViewById(R.id.cb_customs);
+        cbFedExORD = (CheckBox)findViewById(R.id.cb_fedex_ord);
 
         lvShipments = (ListView)findViewById(R.id.lv_shipments);
         etBarCode = (EditText)findViewById(R.id.etBarCode);
@@ -226,6 +228,8 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             palletNo=selectObj.No;
             cbCustoms.setEnabled(false);
             cbCustoms.setChecked(selectObj.IsCustoms);
+            cbFedExORD.setEnabled(false);
+            cbFedExORD.setChecked(selectObj.IsFedExORD);
             palletCategoriesspinner.setEnabled(false);
             subPalletnospinner.setEnabled(false);
             Observable.create(new Observable.OnSubscribe<JSONObject>() {
@@ -309,7 +313,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 palletId=0;
                 palletCategoriesspinner.setEnabled(true);
                 subPalletnospinner.setEnabled(true);
-                AddPallte(0,"待生成",0,false,false,"请选择");
+                AddPallte(0,"待生成",0,false,false,"请选择",false);
                 if(palletNoList.size()>0){
                     palletnospinner.setItems(palletNoList);
                     palletnospinner.setSelectedIndex(0);
@@ -317,6 +321,9 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 shipments.clear();
                 cbCustoms.setEnabled(true);
                 cbCustoms.setChecked(false);
+
+                cbFedExORD.setEnabled(true);
+                cbFedExORD.setChecked(false);
                 reBindShipmentsListView();
                 break;
             case R.id.groupmember:
@@ -437,6 +444,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
 
         }
         cbCustoms.setText("");
+        cbFedExORD.setText("");
     }
     //把stationId存入数据库
     private void setStationId() throws Exception{
@@ -476,13 +484,14 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
      * @param palletCategoryId 板类别ID
      * @param isCustomer 是否单独报关
      */
-    private void AddPallte(int id, String value,int palletCategoryId,Boolean isCustomer,boolean isInsert,String subPalletCategoryNo) {
+    private void AddPallte(int id, String value,int palletCategoryId,Boolean isCustomer,boolean isInsert,String subPalletCategoryNo,boolean isFedexORD) {
         if(!palletNoList.contains(value)){
             PalletInfo newItem = new PalletInfo();
             newItem.Id = id;
             newItem.No = value;
             newItem.CategoryId = palletCategoryId;
             newItem.IsCustoms = isCustomer;
+            newItem.IsFedExORD=isFedexORD;
             if(subPalletCategoryNo.equals("请选择"))
                 newItem.SubPalletCategoryNo="";
             else
@@ -607,6 +616,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     params.put("palletCategoryId",currentPalletCategoryId);
                     params.put("subPalletCategoryNo",subPalletCategoryNo);
                     params.put("isCustoms",cbCustoms.isChecked());
+                    params.put("isFedExORD",cbFedExORD.isChecked());
                     params.put("bindStationId",bindStationId);
                     params.put("receiveGoodsDetailSizeId",receiveGoodsDetailSizeId);
                     params.put("header",Global.getHeader());
@@ -647,6 +657,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
 
                     }else{
                         cbCustoms.setEnabled(false);
+                        cbFedExORD.setEnabled(false);
                         addItem(etBarCode.getText().toString());
                         String pieceInfo = String.format("共%s件，剩余%s件",jsonObject.getString("TotalPiece"),jsonObject.getString("ResiduePiece"));
                         ((TextView)findViewById(R.id.tv_pieceinfo)).setText(pieceInfo);
@@ -657,7 +668,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                             //移除临时板
                             RemovePallet(0);
                             //将服务端生成的板添加到板列表
-                            AddPallte(palletId, palletNo,currentPalletCategoryId,cbCustoms.isChecked(),true,subPalletnospinner.getText().toString());
+                            AddPallte(palletId, palletNo,currentPalletCategoryId,cbCustoms.isChecked(),true,subPalletnospinner.getText().toString(),cbFedExORD.isChecked());
                             if(palletNoList.size()>0){
                                 palletnospinner.setItems(palletNoList);
                             }
@@ -810,7 +821,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     for(int i =0;i<array.length();i++){
 
                         AddPallte(array.getJSONObject(i).getInt("Id"),array.getJSONObject(i).getString("No"),array.getJSONObject(i).getInt("CategoryId"),
-                                array.getJSONObject(i).getBoolean("IsCustoms"), false,array.getJSONObject(i).getString("SubPalletCategoryNo"));
+                                array.getJSONObject(i).getBoolean("IsCustoms"), false,array.getJSONObject(i).getString("SubPalletCategoryNo"),array.getJSONObject(i).getBoolean("IsFedExORD"));
 
                     }
                     if(palletNoList.size()>0){
@@ -882,6 +893,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         public int CategoryId;
         public Boolean IsCustoms;
         public String SubPalletCategoryNo;
+        public boolean IsFedExORD;
     }
 
     /**

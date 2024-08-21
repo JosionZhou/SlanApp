@@ -6,4 +6,5 @@ public class PalletItem {
     public String No;
     public int CategoryId ;
     public boolean IsCustoms;
+    public boolean IsFedExORD;
 }

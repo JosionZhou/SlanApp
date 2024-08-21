@@ -91,6 +91,27 @@
             android:textSize="25dp" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="horizontal">
+
+        <com.bigmercu.cBox.CheckBox
+            android:id="@+id/cb_fedex_ord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            app:color_after="@color/checkboxbordercolor"
+            app:color_before="@color/red" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FedEx ORD"
+            android:textSize="25dp" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tv_pieceinfo"
         android:layout_width="match_parent"
