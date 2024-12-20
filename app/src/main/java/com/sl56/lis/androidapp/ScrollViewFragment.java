@@ -106,8 +106,8 @@ public class ScrollViewFragment extends Fragment {
             view = inflater.inflate(R.layout.scroolviewmain,null);
             org.apmem.tools.layouts.FlowLayout parentLL = (org.apmem.tools.layouts.FlowLayout) view.findViewById(R.id.activity_check_goods_remarks);
             for(int i=0;i<array.length();i++){
-                final CheckBox v = (CheckBox)inflater.inflate(R.layout.checkboxtemplate, null);
                 try {
+                final CheckBox v = new CheckBox(this.context,null);
                     String text="";
                     try {
                         text = array.getJSONObject(i).getString("Description");
@@ -304,11 +304,11 @@ public class ScrollViewFragment extends Fragment {
                     width=width+50;//文字的宽度加上复选框的宽度50
                     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width,50);
                     v.setLayoutParams(params);
+                    view.setTag(array);
+                    parentLL.addView(v);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
-                view.setTag(array);
-                parentLL.addView(v);
             }
         }
         isInit=false;

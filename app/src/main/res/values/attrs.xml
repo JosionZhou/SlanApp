@@ -8,5 +8,12 @@
         <attr name="metaButtonBarStyle" format="reference" />
         <attr name="metaButtonBarButtonStyle" format="reference" />
     </declare-styleable>
+    <declare-styleable name="BBox">
+        <attr name="show_border" format="boolean" />
+        <attr name="color_after" format="color" />
+        <attr name="color_before" format="color" />
+        <attr name="check_style" format="string" />
+        <attr name="is_circle_border" format="boolean" />
+    </declare-styleable>
 
 </resources>

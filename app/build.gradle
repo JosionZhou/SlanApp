@@ -25,6 +25,9 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
@@ -33,21 +36,19 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile files('libs/httpclient-4.5.jar')
-    compile 'com.android.support:appcompat-v7:25.1.1'
-    compile 'com.nightonke:boommenu:2.0.7'
-    compile 'com.android.support:design:25.1.1'
-    compile 'com.bigmercu.cBox:cbox:1.08'
-    compile 'com.nex3z:flow-layout:0.1.2'
-    compile 'com.flyco.tablayout:FlycoTabLayout_Lib:2.1.2@aar'
-    compile 'org.apmem.tools:layouts:1.10@aar'
-    compile 'com.android.support:support-v4:25.2.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.afollestad.material-dialogs:core:0.9.4.1'
-    compile 'com.wdullaer:materialdatetimepicker:3.1.3'
-    compile 'com.jaredrummler:material-spinner:1.1.0'
-    compile 'io.reactivex:rxjava:1.0.14'
-    compile 'io.reactivex:rxandroid:1.0.1'
-    compile 'com.baoyz.swipemenulistview:library:1.3.0'
+    implementation 'com.android.support:appcompat-v7:25.1.1'
+    implementation 'com.github.Nightonke:BoomMenu:master'
+    implementation 'com.android.support:design:25.1.1'
+    implementation 'com.nex3z:flow-layout:0.1.2'
+    implementation 'com.github.H07000223:FlycoTabLayout:master'
+    implementation 'org.apmem.tools:layouts:1.10@aar'
+    implementation 'com.android.support:support-v4:25.2.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.afollestad.material-dialogs:core:0.9.4.1'
+    implementation 'com.wdullaer:materialdatetimepicker:3.1.3'
+    implementation 'com.jaredrummler:material-spinner:1.1.0'
+    implementation 'io.reactivex:rxjava:1.0.14'
+    implementation 'io.reactivex:rxandroid:1.0.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 }
 

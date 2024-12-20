@@ -1,6 +1,8 @@
 package com.sl56.lis.androidapp;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -28,6 +30,9 @@ public class PackagingOptimizationActivity extends AppCompatActivity {
 
     private EditText etReferenceNumber;
     private MaterialDialog pDialog;
+    private Button btnScan;
+    private TextView tvStatus;
+    @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,12 +42,13 @@ public class PackagingOptimizationActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    PackagingOptimization(0);
+                    PackagingOptimization(-1);
                     return true;
                 }
                 return false;
             }
         });
+        tvStatus = (TextView)findViewById(R.id.tv_Status);
         findViewById(R.id.btn_mark_PackagingOptimization).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -53,6 +59,12 @@ public class PackagingOptimizationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 PackagingOptimization(1);
+            }
+        });
+        findViewById(R.id.btn_Search).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PackagingOptimization(-1);
             }
         });
 
@@ -116,13 +128,23 @@ public class PackagingOptimizationActivity extends AppCompatActivity {
                             showDialog("网络访问异常",errorMsg);
                         } else {
                             Boolean isSuccess = jsonObject.getBoolean("Success");
+                            String message = jsonObject.getString("Message");
                             if (!isSuccess) {
-                                String errorMsg = jsonObject.getString("Message");
-                                showDialog("操作失败",errorMsg);
+                                showDialog("操作失败",message);
                             }else{
-                                showDialogAndShock("操作成功",etReferenceNumber.getText().toString()+ (actionType==0?" 已标识包装优化":" 已取消包装优化"),false);
-                                etReferenceNumber.setText("");
-                                etReferenceNumber.requestFocus();
+                                if(actionType==-1){
+                                    tvStatus.setText("单号优化状态："+message);
+                                    if(message.equals("不可优化"))
+                                        tvStatus.setTextColor(ContextCompat.getColor(PackagingOptimizationActivity.this, R.color.red));
+                                    else if(message.equals("可优化"))
+                                        tvStatus.setTextColor(ContextCompat.getColor(PackagingOptimizationActivity.this, R.color.green));
+                                    else
+                                        tvStatus.setTextColor(ContextCompat.getColor(PackagingOptimizationActivity.this, R.color.black));
+                                }else {
+                                    showDialogAndShock("操作成功", etReferenceNumber.getText().toString() + (actionType == 0 ? " 已标识包装优化" : " 已取消包装优化"), false);
+                                    etReferenceNumber.setText("");
+                                    etReferenceNumber.requestFocus();
+                                }
                             }
                         }
                     }catch (Exception e){
@@ -158,5 +180,7 @@ public class PackagingOptimizationActivity extends AppCompatActivity {
     }
     private void showDialog(String title,String content){
         showDialogAndShock(title,content,true);
+        tvStatus.setText("单号优化状态：");
+        tvStatus.setTextColor(ContextCompat.getColor(PackagingOptimizationActivity.this, R.color.black));
     }
 }
