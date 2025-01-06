@@ -180,6 +180,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(it);
             }
         });
+
+        findViewById(R.id.btn_PrintInnerLabel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent it = new Intent(MainActivity.this,PrintInnerLabelActivity.class);
+                startActivity(it);
+            }
+        });
 //        rightBmb.setButtonEnum(ButtonEnum.Ham);
 //        rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
 //        rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);

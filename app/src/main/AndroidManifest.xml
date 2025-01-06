@@ -81,6 +81,9 @@
         <activity
             android:name=".PackagingOptimizationActivity"
             android:label="@string/text_slan_packaging_optimization" />
+        <activity
+            android:name=".PrintInnerLabelActivity"
+            android:label="@string/text_slan_print_inner_label" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.sl56.lis.androidapp.fileprovider"

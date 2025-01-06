@@ -18,6 +18,7 @@
     <string name="text_slan_action_archivescan">扫描底单</string>
     <string name="text_slan_scan_rgd">收货扫描</string>
     <string name="text_slan_packaging_optimization">包装优化</string>
+    <string name="text_slan_print_inner_label">打印内部标签</string>
     <string name="text_slan_action_remove_pallet">拆板</string>
     <string name="text_slan_activity_hscode">海关编码</string>
     <string name="text_add_hscode">添加海关编码</string>
