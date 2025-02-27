@@ -84,6 +84,9 @@
         <activity
             android:name=".PrintInnerLabelActivity"
             android:label="@string/text_slan_print_inner_label" />
+        <activity
+            android:name=".BindFBAActivity"
+            android:label="@string/text_slan_bind_fba_label" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.sl56.lis.androidapp.fileprovider"

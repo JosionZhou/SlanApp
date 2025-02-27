@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/silver"
+    tools:context="com.sl56.lis.androidapp.ClearanceActivity">
+
+    <EditText
+        android:id="@+id/et_package_number"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:hint="请输入子单号"
+        android:textSize="25dip"
+        android:singleLine="true"
+        android:padding="10dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.0" />
+
+    <EditText
+        android:id="@+id/et_fba_number"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@color/white"
+        android:hint="请输FBA单号"
+        android:padding="10dp"
+        android:singleLine="true"
+        android:textSize="25dip"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_package_number" />
+
+    <Button
+        android:id="@+id/btn_re_scan"
+        android:layout_width="400dp"
+        android:layout_height="60dp"
+        android:text="重新扫描"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_fba_number" />
+
+    <TextView
+        android:id="@+id/tv_clearanceinfo"
+        android:layout_width="0dp"
+        android:layout_height="490dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/white"
+        android:padding="3dp"
+        android:text="注意！当前操作为：扫描子单号绑定FAB"
+        android:textColor="@color/red"
+        android:textSize="40dip"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_re_scan" />
+</android.support.constraint.ConstraintLayout>
