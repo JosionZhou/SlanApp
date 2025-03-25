@@ -274,6 +274,7 @@ public class PrintLabelActivity extends AppCompatActivity {
         //list.add(new AbstractMap.SimpleEntry("需要发票(其他)："+(result.getBoolean("IsRequeiredInvoice")?"是":"否"),result.getBoolean("IsRequeiredInvoice")));
         list.add(new AbstractMap.SimpleEntry("单独报关："+(result.getBoolean("IsCustomsDeclaration")?"是":"否"),result.getBoolean("IsCustomsDeclaration")));
         list.add(new AbstractMap.SimpleEntry("无纸化："+(result.getBoolean("IsPaperless")?"是":"否"),result.getBoolean("IsPaperless")));
+        list.add(new AbstractMap.SimpleEntry("需扫描FBA："+(result.getBoolean("IsScanFBARequired")?"是":"否"),result.getBoolean("IsScanFBARequired")));
         list.addAll(getAttachmentInfos());
         String printTips = result.getString("PrintTips");
         if(printTips.length()>0 && printTips!="null")
