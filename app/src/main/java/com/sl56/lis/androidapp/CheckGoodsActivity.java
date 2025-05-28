@@ -688,6 +688,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                     dialog.dismiss();
                     try {
                         Boolean isSuccess = result.getBoolean("Success");
+                        receiveGoodsDetailId = result.getInt("ReceiveGoodsDetailId");
                         if (!isSuccess) {
                             String alertMsg = result.getString("ErrorMessage");
                             throw new Exception(alertMsg);
@@ -705,7 +706,7 @@ public class CheckGoodsActivity extends AppCompatActivity {
                         arrayList.add(problems);//添加问题到第三个选项卡
                         arrayList.add(remark);//填写备注的选项卡显示已存在的备注内容
                         InspectionTips = result.getString("InspectionTips");
-                        receiveGoodsDetailId = result.getInt("ReceiveGoodsDetailId");
+
                         cellQuantity = result.getInt("CellQuantity");
                         piece = result.getInt("Piece");
                         Message msg = handler.obtainMessage();
