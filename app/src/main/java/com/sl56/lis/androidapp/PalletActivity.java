@@ -546,37 +546,9 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             case 34://FedEx
                 no=temp.substring(22);
                 break;
-            case 21://DHL
-                no=temp;
-                break;
-            case 18:
-                no=temp;
-                break;
-            case 11://Aramex
-                no=temp;
-                break;
-            case 14:
-                no=temp;
-                break;
             default:
-                VibratorHelper.shock(this);
-                new  MaterialDialog.Builder(this)
-                        .title("错误")
-                        .content("扫描的单号异常")
-                        .canceledOnTouchOutside(false)//点击外部不取消对话框
-                        .positiveText("确定")
-                        .onAny(new MaterialDialog.SingleButtonCallback(){
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                if (which == DialogAction.POSITIVE) {
-                                    enableScanner();
-                                    etBarCode.setFocusable(true);
-                                    etBarCode.selectAll();
-                                }
-                            }
-                        })
-                        .show();
-
-                return;
+                no=temp;
+                break;
         }
         etBarCode.setText(no);
         //Aramex 多件是同一个单号，不做检查
