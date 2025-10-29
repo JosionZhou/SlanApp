@@ -874,7 +874,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private class ScannerResultReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             //scanner.scan_stop();
-            final String scanResult = intent.getStringExtra("value");//***重要 Extral参数
+            final String scanResult = intent.getStringExtra("value").replace("\u001D", "");//***重要 Extral参数,替换掉gs码
             /** 如果条码长度>0，解码成功。如果条码长度等于0解码失败。*/
             if (intent.getAction().equals(RES_ACTION)){//获取扫描结果   ****重要 Action
                 if(scanResult.length()>0){
