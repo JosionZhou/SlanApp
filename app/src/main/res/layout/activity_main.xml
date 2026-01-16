@@ -41,6 +41,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="60dp"
                 android:text="绑定FBA" />
+            <Button
+                android:id="@+id/btn_can_pallet"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:text="可否打板" />
         </TableRow>
 
     </TableLayout>
