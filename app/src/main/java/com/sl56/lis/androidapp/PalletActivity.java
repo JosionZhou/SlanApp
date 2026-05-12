@@ -2,7 +2,6 @@ package com.sl56.lis.androidapp;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -10,17 +9,19 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.ActionMode;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -34,16 +35,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -58,7 +56,8 @@ import rx.schedulers.Schedulers;
 
 public class PalletActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
     private String errorMsg;
-    private MaterialSpinner palletCategoriesspinner;
+    private AutoCompleteTextView atvPalletCategory;
+    Map.Entry<String, Integer> foundPalletCategoryEntry = null;
     private MaterialSpinner palletnospinner;
     private MaterialSpinner subPalletnospinner;
     private EditText etBarCode;
@@ -67,7 +66,6 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private String palletNo;
     private Integer bindStationId = null;
     private Integer tempBindStationId=null;
-    private Integer currentPalletCategoryId=null;
     private ArrayList<String> shipments = new ArrayList<>();//已扫描的单号列表
     private ArrayList<Map.Entry<String,Integer>> palletCategories = new ArrayList<>();
     private Map<String,Integer> bindingStationList = new Hashtable<>();
@@ -162,12 +160,11 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         });
         subPalletnospinner= (MaterialSpinner)findViewById(R.id.spinner_subpalletcategory);
         subPalletnospinner.setItems(subPalletNoList);
-        palletCategoriesspinner = (MaterialSpinner) findViewById(R.id.spinner_palletcategory);
-        palletCategoriesspinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
-
-            @Override public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
-                currentPalletCategoryId = palletCategories.get(position).getValue();
-            }
+        //获取打板代码控件
+        atvPalletCategory = (AutoCompleteTextView) findViewById(R.id.atv_palletcategory);
+        //强制大写
+        atvPalletCategory.setFilters(new InputFilter[] {
+                new InputFilter.AllCaps()
         });
         try {
             getPalletCagetories();
@@ -230,7 +227,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             cbCustoms.setChecked(selectObj.IsCustoms);
             cbFedExORD.setEnabled(false);
             cbFedExORD.setChecked(selectObj.IsFedExORD);
-            palletCategoriesspinner.setEnabled(false);
+            atvPalletCategory.setEnabled(false);
             subPalletnospinner.setEnabled(false);
             Observable.create(new Observable.OnSubscribe<JSONObject>() {
                 @Override
@@ -260,8 +257,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                                 reBindShipmentsListView();
                                 for(Map.Entry<String,Integer> entry:palletCategories){
                                     if(entry.getValue()==selectObj.CategoryId){
-                                        int idx=palletCategories.indexOf(entry);
-                                        palletCategoriesspinner.setSelectedIndex(idx);
+                                        atvPalletCategory.setText(entry.getKey());
                                     }
                                 }
                                 subPalletnospinner.setText(selectObj.SubPalletCategoryNo);
@@ -311,7 +307,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 break;
             case R.id.add:
                 palletId=0;
-                palletCategoriesspinner.setEnabled(true);
+                atvPalletCategory.setEnabled(true);
                 subPalletnospinner.setEnabled(true);
                 AddPallte(0,"待生成",0,false,false,"请选择",false);
                 if(palletNoList.size()>0){
@@ -577,7 +573,15 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
             @Override
             public void call(Subscriber<? super JSONObject> subscriber) {
                 JSONObject params = new JSONObject();
-                currentPalletCategoryId=palletCategories.get(palletCategoriesspinner.getSelectedIndex()).getValue();
+                for (Map.Entry<String, Integer> entry : palletCategories) {
+                    if (entry.getKey().equals(atvPalletCategory.getText().toString().toUpperCase())) {
+                        foundPalletCategoryEntry = entry;
+                        break;
+                    }
+                }
+                if(foundPalletCategoryEntry==null){
+                    subscriber.onError(new Exception("打板代码不正确，请重新输入"));
+                }
                 String subPalletCategoryNo= subPalletnospinner.getText().toString();
                 if(subPalletCategoryNo.equals("请选择")){
                     subPalletCategoryNo="";
@@ -585,7 +589,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 try {
                     params.put("packageNumber",etBarCode.getText().toString());
                     params.put("palletId",palletId);
-                    params.put("palletCategoryId",currentPalletCategoryId);
+                    params.put("palletCategoryId",foundPalletCategoryEntry.getValue());
                     params.put("subPalletCategoryNo",subPalletCategoryNo);
                     params.put("isCustoms",cbCustoms.isChecked());
                     params.put("isFedExORD",cbFedExORD.isChecked());
@@ -602,61 +606,75 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<JSONObject>() {
-            @Override
-            public void call(JSONObject jsonObject) {
-                try {
-                    //progressDialog.dismiss();
+                       @Override
+                       public void call(JSONObject jsonObject) {
+                           try {
+                               //progressDialog.dismiss();
 
-                    String message = jsonObject.getString("Message");
-                    if(!message.isEmpty()) {
+                               String message = jsonObject.getString("Message");
+                               if (!message.isEmpty()) {
+                                   VibratorHelper.shock(PalletActivity.this);
+                                   new MaterialDialog.Builder(PalletActivity.this)
+                                           .positiveText("确定")
+                                           .canceledOnTouchOutside(false)//点击外部不取消对话框
+                                           .title("操作失败")
+                                           .content(message)
+                                           .onAny(new MaterialDialog.SingleButtonCallback() {
+                                               public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                                   if (which == DialogAction.POSITIVE) {
+                                                       enableScanner();
+                                                       etBarCode.selectAll();
+                                                   }
+                                               }
+
+                                           })
+                                           .show();
+
+
+                               } else {
+                                   cbCustoms.setEnabled(false);
+                                   cbFedExORD.setEnabled(false);
+                                   addItem(etBarCode.getText().toString());
+                                   String pieceInfo = String.format("共%s件，剩余%s件", jsonObject.getString("TotalPiece"), jsonObject.getString("ResiduePiece"));
+                                   ((TextView) findViewById(R.id.tv_pieceinfo)).setText(pieceInfo);
+                                   //新增的一个板
+                                   if (palletId == 0) {
+                                       palletId = jsonObject.getInt("PalletId");
+                                       palletNo = jsonObject.getString("PalletNo");
+                                       //移除临时板
+                                       RemovePallet(0);
+                                       //将服务端生成的板添加到板列表
+                                       AddPallte(palletId, palletNo, foundPalletCategoryEntry.getValue(), cbCustoms.isChecked(), true, subPalletnospinner.getText().toString(), cbFedExORD.isChecked());
+                                       if (palletNoList.size() > 0) {
+                                           palletnospinner.setItems(palletNoList);
+                                       }
+                                   }
+                                   receiveGoodsDetailSizeId = 0;
+                                   etBarCode.selectAll();
+                                   enableScanner();
+                               }
+
+                           } catch (JSONException e) {
+                               e.printStackTrace();
+
+                           }
+
+                       }
+                   }
+                , new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
                         VibratorHelper.shock(PalletActivity.this);
                         new MaterialDialog.Builder(PalletActivity.this)
                                 .positiveText("确定")
                                 .canceledOnTouchOutside(false)//点击外部不取消对话框
                                 .title("操作失败")
-                                .content(message)
-                                .onAny(new MaterialDialog.SingleButtonCallback(){
-                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                        if (which == DialogAction.POSITIVE) {
-                                            enableScanner();
-                                            etBarCode.selectAll();
-                                        }
-                                    }
-
-                                })
+                                .content(throwable.getMessage())
                                 .show();
-
-
-                    }else{
-                        cbCustoms.setEnabled(false);
-                        cbFedExORD.setEnabled(false);
-                        addItem(etBarCode.getText().toString());
-                        String pieceInfo = String.format("共%s件，剩余%s件",jsonObject.getString("TotalPiece"),jsonObject.getString("ResiduePiece"));
-                        ((TextView)findViewById(R.id.tv_pieceinfo)).setText(pieceInfo);
-                        //新增的一个板
-                        if(palletId==0){
-                            palletId=jsonObject.getInt("PalletId");
-                            palletNo=jsonObject.getString("PalletNo");
-                            //移除临时板
-                            RemovePallet(0);
-                            //将服务端生成的板添加到板列表
-                            AddPallte(palletId, palletNo,currentPalletCategoryId,cbCustoms.isChecked(),true,subPalletnospinner.getText().toString(),cbFedExORD.isChecked());
-                            if(palletNoList.size()>0){
-                                palletnospinner.setItems(palletNoList);
-                            }
-                        }
-                        receiveGoodsDetailSizeId=0;
                         etBarCode.selectAll();
                         enableScanner();
                     }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-
-                }
-
-            }
-        });
+                });
     }
     private void pallet1(){
         etBarCode.selectAll();
@@ -692,7 +710,6 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                     @Override
                     public void call(Subscriber<? super JSONObject> subscriber) {
                         JSONObject params = new JSONObject();
-                        currentPalletCategoryId=palletCategories.get(palletCategoriesspinner.getSelectedIndex()).getValue();
                         try {
                             params.put("packageNumber",etBarCode.getText().toString());
                             params.put("bindStationId",bindStationId);
@@ -828,7 +845,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
     private void addItem(String referenceNumber){
         shipments.add(referenceNumber);
         reBindShipmentsListView();
-        palletCategoriesspinner.setEnabled(shipments.size()<=0);
+        atvPalletCategory.setEnabled(shipments.size()<=0);
     }
     public Boolean Find(String trackNumber)
     {
@@ -921,7 +938,7 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
                 for (int i=0;i<categories.length();i++){
                     palletCategories.add(new AbstractMap.SimpleEntry(categories.getJSONObject(i).getString("Value"),categories.getJSONObject(i).getInt("Key")));
                 }
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return new AbstractMap.SimpleEntry<Boolean, String>(true,"");
@@ -930,13 +947,52 @@ public class PalletActivity extends AppCompatActivity implements DatePickerDialo
         @Override
         protected void onPostExecute(AbstractMap.SimpleEntry<Boolean,String> result) {
             if(result.getKey()) {
-                ArrayList<String> list = new ArrayList<>();
+                //用来存放板代码显示控件的数据
+                final ArrayList<String> palletCategoryNames = new ArrayList<>();
                 for (Map.Entry<String, Integer> item : palletCategories) {
-                    list.add(item.getKey());
+                    palletCategoryNames.add(item.getKey());
                 }
-                palletCategoriesspinner.setItems(list.toArray(new String[0]));
-                //获取打板类别时，默认选中第一个打板类别
-                currentPalletCategoryId = palletCategories.get(0).getValue();
+                final List<String> originPalletCategoryNames=new ArrayList<>(palletCategoryNames); // 备份原始数据
+                ArrayAdapter<String> palletCategoryAdapter = new ArrayAdapter<String>(PalletActivity.this, android.R.layout.simple_dropdown_item_1line, palletCategoryNames)
+                {
+                    @NonNull
+                    @Override
+                    public Filter getFilter() {
+                        return new Filter() {
+                            @Override
+                            protected FilterResults performFiltering(CharSequence constraint) {
+                                FilterResults results = new FilterResults();
+                                List<String> suggestions = new ArrayList<>();
+
+                                if (constraint == null || constraint.length() == 0) {
+                                    suggestions.addAll(originPalletCategoryNames);
+                                } else {
+                                    // 核心：使用 contains 实现模糊包含匹配，而不是默认的 startsWith
+                                    String filterPattern = constraint.toString().toLowerCase().trim();
+                                    for (String item : originPalletCategoryNames) {
+                                        if (item.toLowerCase().contains(filterPattern)) {
+                                            suggestions.add(item);
+                                        }
+                                    }
+                                }
+
+                                results.values = suggestions;
+                                results.count = suggestions.size();
+                                return results;
+                            }
+
+                            @Override
+                            protected void publishResults(CharSequence constraint, FilterResults results) {
+                                clear();
+                                if (results.values != null) {
+                                    addAll((List<String>) results.values);
+                                }
+                                notifyDataSetChanged();
+                            }
+                        };
+                    }
+                };
+                atvPalletCategory.setAdapter(palletCategoryAdapter);
             }else{
                 VibratorHelper.shock(PalletActivity.this);
                 new MaterialDialog.Builder(PalletActivity.this)
