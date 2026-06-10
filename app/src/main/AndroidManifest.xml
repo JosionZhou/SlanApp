@@ -90,6 +90,9 @@
         <activity
             android:name=".ScanCanPalletActivity"
             android:label="@string/text_slan_scan_can_pallet" />
+        <activity
+            android:name=".ScanIsImportManifestActivity"
+            android:label="@string/text_slan_scan_is_import_manifest" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.sl56.lis.androidapp.fileprovider"

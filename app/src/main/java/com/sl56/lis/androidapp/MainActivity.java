@@ -202,6 +202,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(it);
             }
         });
+        findViewById(R.id.btn_is_import_manifest).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent it = new Intent(MainActivity.this,ScanIsImportManifestActivity.class);
+                startActivity(it);
+            }
+        });
 //        rightBmb.setButtonEnum(ButtonEnum.Ham);
 //        rightBmb.setPiecePlaceEnum(PiecePlaceEnum.HAM_4);
 //        rightBmb.setButtonPlaceEnum(ButtonPlaceEnum.HAM_4);
