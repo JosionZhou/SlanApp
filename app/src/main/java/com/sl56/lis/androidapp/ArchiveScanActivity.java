@@ -1,75 +1,141 @@
 package com.sl56.lis.androidapp;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class ArchiveScanActivity extends AppCompatActivity {
 
     private EditText etReferenceNumber;
-    private TextView tvClearanceInfo;
-    private MaterialDialog pDialog;
+    private MaterialSpinner palletizedSpinner;
     private ScannerInterface scanner;
+    private int selectedPalletizedId;
+    private final List<PalletizedItem> palletizedItems = new ArrayList<>();
+    private final List<String> successfulScans = new ArrayList<>();
+    private ArrayAdapter<String> successfulScanAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_archive_scan);
-        tvClearanceInfo = (TextView)findViewById(R.id.tv_clearanceinfo);
-        etReferenceNumber = (EditText)findViewById(R.id.et_referencenumber);
+
+        palletizedSpinner = (MaterialSpinner) findViewById(R.id.spinner_palletized);
+        etReferenceNumber = (EditText) findViewById(R.id.et_referencenumber);
+        ListView successfulScanList = (ListView) findViewById(R.id.lv_successful_scans);
+        successfulScanAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, successfulScans);
+        successfulScanList.setAdapter(successfulScanAdapter);
+
+        palletizedSpinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
+            @Override
+            public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
+                selectedPalletizedId = position > 0 ? palletizedItems.get(position - 1).id : 0;
+            }
+        });
         etReferenceNumber.setOnKeyListener(new View.OnKeyListener() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_UP) {
                     disableScanner();
-                    ArchiveScan();
+                    archiveScan();
                     return true;
                 }
                 return false;
             }
         });
+
         initScanner();
+        loadPalletizedList();
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-        // 是否显示应用程序图标，默认为true
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        // 是否显示应用程序标题，默认为true
-        actionBar.setDisplayShowTitleEnabled(true);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(true);
+        }
         forceShowOverflowMenu();
     }
-    private  void initScanner()
-    {
-        scanner=new ScannerInterface(this);
-        //scanner.open();
-        //scanner.resultScan();
+
+    private void initScanner() {
+        scanner = new ScannerInterface(this);
         scanner.setOutputMode(0);
-        scanner.enableFailurePlayBeep(true);//扫描失败蜂鸣反馈  ***测试扫描失败反馈接口，解码失败会出现错误提示
+        scanner.enableFailurePlayBeep(true);
     }
+
+    private void loadPalletizedList() {
+        Observable.create(new Observable.OnSubscribe<JSONObject>() {
+            @Override
+            public void call(Subscriber<? super JSONObject> subscriber) {
+                try {
+                    JSONObject params = new JSONObject();
+                    params.put("header", Global.getHeader());
+                    subscriber.onNext(HttpHelper.getJSONObjectFromUrl("GetArchiveScanPalletizedList", params));
+                    subscriber.onCompleted();
+                } catch (Exception ex) {
+                    subscriber.onError(ex);
+                }
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<JSONObject>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        showDialog("加载失败", getErrorMessage(throwable));
+                    }
+
+                    @Override
+                    public void onNext(JSONObject jsonObject) {
+                        try {
+                            ensureSuccessfulResponse(jsonObject);
+                            JSONArray details = jsonObject.getJSONArray("Details");
+                            palletizedItems.clear();
+                            List<String> palletizedNos = new ArrayList<>();
+                            palletizedNos.add("请选择物理板号");
+                            for (int i = 0; i < details.length(); i++) {
+                                JSONObject detail = details.getJSONObject(i);
+                                PalletizedItem item = new PalletizedItem(detail.getInt("Id"), detail.getString("No"));
+                                palletizedItems.add(item);
+                                palletizedNos.add(item.no);
+                            }
+                            selectedPalletizedId = 0;
+                            palletizedSpinner.setItems(palletizedNos);
+                        } catch (Exception ex) {
+                            showDialog("加载失败", getErrorMessage(ex));
+                        }
+                    }
+                });
+    }
+
     private void forceShowOverflowMenu() {
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
-            Field menuKeyField = ViewConfiguration.class
-                    .getDeclaredField("sHasPermanentMenuKey");
-            if (menuKeyField != null) {
-                menuKeyField.setAccessible(true);
-                menuKeyField.setBoolean(config, false);
-            }
+            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+            menuKeyField.setAccessible(true);
+            menuKeyField.setBoolean(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,83 +143,108 @@ public class ArchiveScanActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                break;
+        if (item.getItemId() == android.R.id.home) {
+            finish();
         }
         return super.onOptionsItemSelected(item);
     }
-    private void ArchiveScan(){
-        String refNumber = etReferenceNumber.getText().toString();
-        final String exeNumber;
-        if(refNumber.isEmpty()){
-            showDialog("提示","单号不能为空");
+
+    private void archiveScan() {
+        String scannedNumber = etReferenceNumber.getText().toString().trim();
+        if (selectedPalletizedId == 0) {
+            enableScanner();
+            showDialog("提示", "请先选择物理板号");
             return;
         }
-        //联邦单号做特殊处理
-        if(refNumber.length()==16 && refNumber.lastIndexOf("0430")==12){
-            refNumber=refNumber.substring(0,12);
+        if (scannedNumber.isEmpty()) {
+            enableScanner();
+            showDialog("提示", "单号不能为空");
+            return;
         }
-        exeNumber=refNumber;
-//        pDialog = new MaterialDialog.Builder(this)
-//                .content("数据同步中...")
-//                .cancelable(false)
-//                .progress(true,0)
-//                .show();
+
+        String requestNumber = scannedNumber;
+        if (requestNumber.length() == 16 && requestNumber.lastIndexOf("0430") == 12) {
+            requestNumber = requestNumber.substring(0, 12);
+        }
+        final String displayNumber = scannedNumber;
+        final String trackNumber = requestNumber;
+        final int palletizedId = selectedPalletizedId;
+
         Observable.create(new Observable.OnSubscribe<JSONObject>() {
             @Override
             public void call(Subscriber<? super JSONObject> subscriber) {
-                JSONObject params = new JSONObject();
                 try {
-                    params.put("trackNumber",exeNumber);
-                    params.put("header",Global.getHeader());
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    JSONObject params = new JSONObject();
+                    params.put("trackNumber", trackNumber);
+                    params.put("palletizedId", palletizedId);
+                    params.put("header", Global.getHeader());
+                    subscriber.onNext(HttpHelper.getJSONObjectFromUrl("ArchiveScanByPallet", params));
+                    subscriber.onCompleted();
+                } catch (Exception ex) {
+                    subscriber.onError(ex);
                 }
-                subscriber.onNext(HttpHelper.getJSONObjectFromUrl("ArchiveScan",params));
             }
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<JSONObject>() {
+                .subscribe(new Subscriber<JSONObject>() {
                     @Override
-                    public void call(JSONObject jsonObject) {
-                        //pDialog.dismiss();
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
                         enableScanner();
-                        if(jsonObject!=null&&!jsonObject.toString().trim().isEmpty()){
-                            try {
-                                if (jsonObject.toString().contains("Error")) {
-                                    String errorMsg = jsonObject.getString("Error");
-                                    showDialog("网络访问异常",errorMsg);
-                                } else {
-                                    Boolean isSuccess = jsonObject.getBoolean("Success");
-                                    if (!isSuccess) {
-                                        String errorMsg = jsonObject.getString("Message");
-                                        showDialog("操作失败",errorMsg);
-                                    }else{
-                                        //etReferenceNumber.setText("");
-                                        tvClearanceInfo.setText(etReferenceNumber.getText().toString()+ " 扫描底单成功");
-                                    }
-                                }
-                            }catch (Exception e){
-                                showDialog("系统异常",e.getMessage());
-                            }
-                        }
                         etReferenceNumber.selectAll();
+                        showDialog("网络访问异常", getErrorMessage(throwable));
+                    }
+
+                    @Override
+                    public void onNext(JSONObject jsonObject) {
+                        enableScanner();
+                        etReferenceNumber.selectAll();
+                        try {
+                            ensureSuccessfulResponse(jsonObject);
+                            successfulScans.add(0, displayNumber + " 扫描底单成功");
+                            successfulScanAdapter.notifyDataSetChanged();
+                        } catch (Exception ex) {
+                            showDialog("操作失败", getErrorMessage(ex));
+                        }
                     }
                 });
-
     }
-    private void enableScanner(){
+
+    private void ensureSuccessfulResponse(JSONObject jsonObject) throws JSONException {
+        if (jsonObject == null) {
+            throw new JSONException("服务器未返回数据");
+        }
+        if (jsonObject.has("Error")) {
+            throw new JSONException(jsonObject.optString("Error", "网络访问异常"));
+        }
+        if (!jsonObject.has("Success")) {
+            throw new JSONException(jsonObject.optString("Message", "服务器返回格式错误"));
+        }
+        if (!jsonObject.getBoolean("Success")) {
+            throw new JSONException(jsonObject.optString("Message", "操作失败"));
+        }
+    }
+
+    private String getErrorMessage(Throwable throwable) {
+        String message = throwable == null ? null : throwable.getMessage();
+        return message == null || message.trim().isEmpty() ? "未知错误" : message;
+    }
+
+    private void enableScanner() {
         etReferenceNumber.setEnabled(true);
         scanner.lockScanKey();
     }
-    private  void  disableScanner(){
+
+    private void disableScanner() {
         etReferenceNumber.setEnabled(false);
         scanner.unlockScanKey();
     }
-    private void showDialog(String title,String content){
+
+    private void showDialog(String title, String content) {
         new MaterialDialog.Builder(ArchiveScanActivity.this)
                 .positiveText("确定")
                 .title(title)
@@ -161,5 +252,15 @@ public class ArchiveScanActivity extends AppCompatActivity {
                 .cancelable(false)
                 .show();
         VibratorHelper.shock(ArchiveScanActivity.this);
+    }
+
+    private static class PalletizedItem {
+        private final int id;
+        private final String no;
+
+        private PalletizedItem(int id, String no) {
+            this.id = id;
+            this.no = no;
+        }
     }
 }
