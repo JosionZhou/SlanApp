@@ -353,8 +353,11 @@ public class PrintLabelActivity extends AppCompatActivity {
                             try {
                                 etReferenceNumber.selectAll();
                                 if(checkTime()){
-
-                                    doPrint(false);
+                                    if(result.optBoolean("HasPrintedOtherTransportDocument", false)) {
+                                        dialog.dismiss();
+                                        showChangedLabelWarning();
+                                    } else
+                                        doPrint(false);
                                 }
 
                                 else
@@ -371,6 +374,28 @@ public class PrintLabelActivity extends AppCompatActivity {
                     .show();
         }
 
+    }
+
+    private void showChangedLabelWarning() {
+        // 普通打印确认完成后再单独提示，操作员确认已知悉旧 Label 作废才继续打印。
+        new MaterialDialog.Builder(this)
+                .title("注意")
+                .content("旧Label已作废，需撕掉重贴。")
+                .positiveText("确定")
+                .cancelable(false)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        try {
+                            dialog.dismiss();
+                            doPrint(false);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .show();
+        VibratorHelper.shock(PrintLabelActivity.this);
     }
 
     /**
